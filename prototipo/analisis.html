@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app-shell-root"></div>
+
+<script src="js/app.js"></script>
+<script src="js/mentor.js"></script>
+<script>
+  const user = initShell("analisis.html");
+  if(user){
+    document.getElementById("page-content").innerHTML = `
+      <h1>📉 Análisis</h1>
+      <p>Aprende a interpretar gráficos y aplicar indicadores técnicos — de forma simulada.</p>
+
+      <div class="card mt-16 placeholder-box" style="height:220px;">
+        <!-- GRÁFICAS: aquí se integrará una librería de gráficos real -->
+        Gráfica de velas placeholder
+      </div>
+
+      <div class="card-grid mt-16">
+        <div class="card">
+          <h3>Soportes y resistencias</h3>
+          <p>Niveles donde el precio históricamente reacciona.</p>
+        </div>
+        <div class="card">
+          <h3>Tendencias</h3>
+          <p>Identifica si el mercado se mueve al alza, a la baja o de forma lateral.</p>
+        </div>
+        <div class="card">
+          <h3>Indicadores</h3>
+          <p>RSI, medias móviles y otros indicadores comunes.</p>
+        </div>
+      </div>
+
+      <a href="mentor.html" class="btn btn-primary mt-16">Preguntarle a NEXUS AI sobre análisis técnico</a>
+    `;
+  }
+</script>
+</body>
+</html>

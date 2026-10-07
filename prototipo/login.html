@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar sesión — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="landing-header">
+  <a href="index.html" class="logo">✕ NEXUS</a>
+</header>
+
+<div class="container mt-32">
+  <form class="form-card" id="login-form" onsubmit="handleLoginSubmit(event)">
+    <h2 class="text-center mb-16">Iniciar sesión</h2>
+    <p id="login-error" class="mt-8" style="color:var(--danger); font-size:.85rem;"></p>
+
+    <div class="field">
+      <label>Usuario o correo</label>
+      <input type="text" id="login-id">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="login-password">
+    </div>
+    <div class="row" style="justify-content:space-between; align-items:center;">
+      <label style="display:flex; align-items:center; gap:6px; font-size:.85rem;">
+        <input type="checkbox" id="login-remember"> Recordarme
+      </label>
+      <a href="#" class="muted" style="font-size:.85rem;" onclick="toast('Recuperación de contraseña próximamente.'); return false;">¿Olvidaste tu contraseña?</a>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block mt-24">Iniciar sesión</button>
+
+    <p class="mt-24 text-center">¿No tienes cuenta? <a href="register.html">Regístrate</a></p>
+  </form>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

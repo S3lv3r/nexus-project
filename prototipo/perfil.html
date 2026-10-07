@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfil — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app-shell-root"></div>
+
+<script src="js/app.js"></script>
+<script src="js/mentor.js"></script>
+<script>
+  const user = initShell("perfil.html", { requireAuth: true });
+  if(user){
+    const initials = (user.name || user.username || "U").slice(0,2).toUpperCase();
+    document.getElementById("page-content").innerHTML = `
+      <div class="row" style="align-items:center; gap:20px;">
+        <div class="avatar-sm" style="width:80px;height:80px;font-size:1.6rem;">
+          ${user.avatar ? `<img src="${user.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : initials}
+        </div>
+        <div>
+          <h1 style="margin-bottom:2px;">${user.name || user.username}</h1>
+          <p class="muted">@${user.username}</p>
+        </div>
+        <a href="personalizacion.html" class="btn" style="margin-left:auto;">Editar perfil</a>
+      </div>
+
+      <div class="card-grid mt-24">
+        <div class="card stat-card"><div class="value">${user.level}</div><div class="label">Nivel — ${user.levelLabel}</div></div>
+        <div class="card stat-card"><div class="value">${user.xp}</div><div class="label">XP</div></div>
+        <div class="card stat-card"><div class="value">${user.coins}</div><div class="label">Nexus Coins</div></div>
+        <div class="card stat-card"><div class="value">${user.streak}</div><div class="label">Racha</div></div>
+      </div>
+
+      <div class="card mt-24">
+        <h3>Intereses</h3>
+        <div class="row">${categoryNames(user.interests).map(n => `<span class="badge">${n}</span>`).join("") || "<p class='muted'>Ninguno seleccionado</p>"}</div>
+      </div>
+
+      <div class="card mt-16">
+        <h3>Logros (${user.achievements.length})</h3>
+        <div class="row">
+          ${ACHIEVEMENTS.filter(a => user.achievements.includes(a.id)).map(a => `<span class="badge success">${a.icon} ${a.name}</span>`).join("") || "<p class='muted'>Aún sin logros desbloqueados.</p>"}
+        </div>
+      </div>
+
+      <div class="card mt-16">
+        <h3>Actividad reciente</h3>
+        ${user.activity.length ? `<ul>${user.activity.slice(0,8).map(a=>`<li>${a.text}</li>`).join("")}</ul>` : `<p class="muted">Sin actividad todavía.</p>`}
+      </div>
+    `;
+  }
+</script>
+</body>
+</html>

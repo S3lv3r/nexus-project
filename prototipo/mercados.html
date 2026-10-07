@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mercados — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app-shell-root"></div>
+
+<script src="js/app.js"></script>
+<script src="js/mentor.js"></script>
+<script>
+  // FUTURA API DE MERCADOS
+  const FAKE_MARKETS = [
+    { name: "Bitcoin", symbol: "BTC", price: "$62,340", change: "+2.3%", up: true },
+    { name: "Ethereum", symbol: "ETH", price: "$3,210", change: "-1.1%", up: false },
+    { name: "Acciones (ejemplo)", symbol: "AAPL", price: "$189.20", change: "+0.6%", up: true },
+    { name: "ETF S&P 500 (ejemplo)", symbol: "ETF-SP500", price: "$512.80", change: "+0.2%", up: true },
+    { name: "Índice ejemplo", symbol: "IDX-100", price: "$1,204", change: "-0.4%", up: false },
+  ];
+
+  const user = initShell("mercados.html");
+  if(user){
+    document.getElementById("page-content").innerHTML = `
+      <h1>📊 Mercados</h1>
+      <p class="muted">Datos ficticios de ejemplo. <!-- FUTURA API DE MERCADOS: reemplazar por datos en tiempo real --></p>
+      <div class="card-grid mt-16">
+        ${FAKE_MARKETS.map(m => `
+          <div class="card">
+            <h3>${m.name} <span class="muted">(${m.symbol})</span></h3>
+            <div class="value" style="font-size:1.4rem;">${m.price}</div>
+            <span class="badge ${m.up ? "success" : ""}" style="${m.up ? "" : "color:var(--danger)"}">${m.change}</span>
+          </div>`).join("")}
+      </div>
+    `;
+  }
+</script>
+</body>
+</html>

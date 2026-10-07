@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mentor IA — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app-shell-root"></div>
+
+<script src="js/app.js"></script>
+<script src="js/mentor.js"></script>
+<script>
+  const user = initShell("mentor.html");
+  if(user){
+    document.getElementById("page-content").innerHTML = `
+      <h1>🤖 Mentor IA — NEXUS AI</h1>
+      <p>Conoce tu nivel, tus intereses y tu progreso para adaptar cada explicación.</p>
+      <div id="mentor-page-body" class="mt-16"></div>
+    `;
+    initMentorPage(user);
+    // Ocultamos el widget flotante en esta página para no duplicar el chat
+    document.getElementById("mentor-fab").style.display = "none";
+  }
+</script>
+</body>
+</html>

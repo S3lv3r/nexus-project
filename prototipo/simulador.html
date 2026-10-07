@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app-shell-root"></div>
+
+<script src="js/app.js"></script>
+<script src="js/mentor.js"></script>
+<script>
+  const SIM_ASSETS = ["BTC", "ETH", "AAPL", "ETF-SP500"];
+
+  function getSimState(user){
+    if(!user.simulator){
+      user.simulator = { capital: 100000, positions: [], history: [] };
+      saveUser(user);
+    }
+    return user.simulator;
+  }
+
+  function renderSimulador(user){
+    const sim = getSimState(user);
+    const content = document.getElementById("page-content");
+    const pnl = sim.positions.reduce((acc,p) => acc + p.pnlSim, 0);
+
+    content.innerHTML = `
+      <h1>🧮 Simulador de Trading</h1>
+      <p class="badge warning">Esto es dinero virtual. Ninguna operación aquí es real.</p>
+
+      <div class="card-grid mt-16">
+        <div class="card stat-card"><div class="value">$${sim.capital.toLocaleString()}</div><div class="label">Capital virtual (MXN)</div></div>
+        <div class="card stat-card"><div class="value">${sim.positions.length}</div><div class="label">Posiciones abiertas</div></div>
+        <div class="card stat-card"><div class="value" style="color:${pnl>=0?'var(--success)':'var(--danger)'}">${pnl>=0?"+":""}$${pnl.toLocaleString()}</div><div class="label">P&L simulado</div></div>
+      </div>
+
+      <div class="card mt-24 placeholder-box" style="height:200px;">
+        <!-- API DE MERCADOS: aquí se integrará una gráfica real (ej. TradingView / Chart.js) -->
+        Gráfica placeholder del activo seleccionado
+      </div>
+
+      <div class="card mt-16">
+        <h3>Nueva orden</h3>
+        <div class="row">
+          <div class="field col">
+            <label>Activo</label>
+            <select id="sim-asset">${SIM_ASSETS.map(a=>`<option>${a}</option>`).join("")}</select>
+          </div>
+          <div class="field col">
+            <label>Cantidad</label>
+            <input type="number" id="sim-qty" value="1" min="0.01" step="0.01">
+          </div>
+          <div class="field col">
+            <label>Stop Loss (opcional)</label>
+            <input type="number" id="sim-sl">
+          </div>
+          <div class="field col">
+            <label>Take Profit (opcional)</label>
+            <input type="number" id="sim-tp">
+          </div>
+        </div>
+        <button class="btn btn-primary" id="sim-buy">Comprar</button>
+        <button class="btn btn-danger" id="sim-sell">Vender</button>
+      </div>
+
+      <div class="card mt-16">
+        <h3>Posiciones abiertas</h3>
+        ${sim.positions.length ? `
+          <table class="simple-table">
+            <thead><tr><th>Activo</th><th>Cantidad</th><th>Precio simulado</th><th>P&L</th><th></th></tr></thead>
+            <tbody>
+              ${sim.positions.map((p,i) => `
+                <tr>
+                  <td>${p.asset}</td><td>${p.qty}</td><td>$${p.price.toLocaleString()}</td>
+                  <td style="color:${p.pnlSim>=0?'var(--success)':'var(--danger)'}">${p.pnlSim>=0?"+":""}$${p.pnlSim}</td>
+                  <td><button class="btn btn-sm" data-close="${i}">Cerrar</button></td>
+                </tr>`).join("")}
+            </tbody>
+          </table>` : `<p class="muted">Aún no tienes posiciones abiertas.</p>`}
+      </div>
+
+      <div class="card mt-16">
+        <h3>Historial</h3>
+        ${sim.history.length ? `<ul>${sim.history.slice(0,10).map(h=>`<li>${h}</li>`).join("")}</ul>` : `<p class="muted">Sin operaciones registradas todavía.</p>`}
+      </div>
+    `;
+
+    document.getElementById("sim-buy").onclick = () => {
+      const asset = document.getElementById("sim-asset").value;
+      const qty = parseFloat(document.getElementById("sim-qty").value) || 1;
+      const simPrice = Math.round(Math.random() * 900 + 100); // precio ficticio
+      const cost = simPrice * qty;
+      if(cost > sim.capital){ toast("Capital virtual insuficiente."); return; }
+      sim.capital -= cost;
+      sim.positions.push({ asset, qty, price: simPrice, pnlSim: 0 });
+      sim.history.unshift(`Compra: ${qty} ${asset} a $${simPrice} (simulado)`);
+      saveUser(user);
+      addXP(user, 20);
+      unlockAchievement(user, "first_sim_trade");
+      logActivity(user, "Realizó una operación simulada");
+      saveUser(user);
+      renderSimulador(user);
+    };
+
+    document.getElementById("sim-sell").onclick = () => {
+      if(!sim.positions.length){ toast("No tienes posiciones para vender."); return; }
+      const pos = sim.positions.pop();
+      const change = Math.round((Math.random() - 0.4) * pos.price * 0.2);
+      sim.capital += pos.price * pos.qty + change;
+      sim.history.unshift(`Venta: ${pos.qty} ${pos.asset} — resultado simulado ${change>=0?"+":""}$${change}`);
+      saveUser(user);
+      renderSimulador(user);
+    };
+
+    content.querySelectorAll("[data-close]").forEach(btn => {
+      btn.onclick = () => {
+        const i = parseInt(btn.getAttribute("data-close"));
+        const pos = sim.positions.splice(i,1)[0];
+        sim.capital += pos.price * pos.qty;
+        sim.history.unshift(`Cierre manual: ${pos.qty} ${pos.asset}`);
+        saveUser(user);
+        renderSimulador(user);
+      };
+    });
+  }
+
+  const user = initShell("simulador.html");
+  if(user) renderSimulador(user);
+</script>
+</body>
+</html>

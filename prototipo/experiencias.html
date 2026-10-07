@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Experiencias — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app-shell-root"></div>
+
+<script src="js/app.js"></script>
+<script src="js/mentor.js"></script>
+<script>
+  const EXPERIENCE_TYPES = [
+    { icon: "🎮", name: "Reto rápido" },
+    { icon: "🧩", name: "Quiz" },
+    { icon: "📊", name: "Simulación" },
+    { icon: "🔎", name: "Exploración" },
+    { icon: "🧠", name: "Caso práctico" },
+    { icon: "🤖", name: "Conversación con IA" },
+  ];
+
+  const EXPERIENCES_BY_CATEGORY = {
+    trading: ["Simular una operación", "Analizar una gráfica", "Identificar una tendencia", "Gestionar riesgo en un escenario"],
+    cine: ["Analizar una película", "Comparar dos franquicias", "Resolver un caso de estudio", "Identificar patrones narrativos"],
+    gaming: ["Analizar una franquicia", "Comparar consolas", "Resolver una decisión de diseño"],
+    libros: ["Analizar un fragmento", "Comparar autores", "Ubicar una obra en su movimiento literario"],
+    musica: ["Identificar un género por sus características", "Comparar dos épocas musicales"],
+    historia: ["Analizar causas de un evento", "Comparar dos procesos históricos"],
+    ciencia: ["Aplicar el método científico a un caso", "Analizar un experimento simple"],
+    cultura: ["Explorar una curiosidad", "Comparar perspectivas culturales"],
+  };
+
+  const user = initShell("experiencias.html");
+  if(user){
+    const content = document.getElementById("page-content");
+    content.innerHTML = `
+      <h1>🎮 Experiencias</h1>
+      <p>Actividades interactivas adaptadas a tus intereses. La arquitectura permite añadir nuevos tipos sin rediseñar la plataforma.</p>
+
+      <h3 class="mt-24">Tipos de experiencia</h3>
+      <div class="row">
+        ${EXPERIENCE_TYPES.map(t => `<span class="badge">${t.icon} ${t.name}</span>`).join("")}
+      </div>
+
+      ${user.interests.map(catId => {
+        const cat = categoryById(catId);
+        const list = EXPERIENCES_BY_CATEGORY[catId] || [];
+        return `
+          <div class="card mt-24">
+            <h3>${cat.icon} ${cat.name}</h3>
+            <div class="card-grid mt-8">
+              ${list.map(exp => `
+                <div class="card">
+                  <p>${exp}</p>
+                  <button class="btn btn-sm" data-exp="${catId}::${exp}">Iniciar</button>
+                </div>`).join("")}
+            </div>
+          </div>`;
+      }).join("")}
+    `;
+
+    content.querySelectorAll("[data-exp]").forEach(btn => {
+      btn.onclick = () => {
+        addXP(user, 40);
+        unlockAchievement(user, "first_analysis");
+        logActivity(user, "Completó una experiencia interactiva");
+        toast("Experiencia completada. +40 XP");
+        saveUser(user);
+      };
+    });
+  }
+</script>
+</body>
+</html>

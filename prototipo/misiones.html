@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Misiones — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app-shell-root"></div>
+
+<script src="js/app.js"></script>
+<script src="js/mentor.js"></script>
+<script src="js/home.js"></script>
+<script>
+  const user = initShell("misiones.html");
+  if(user){
+    const content = document.getElementById("page-content");
+    const missionDone = wasMissionCompletedToday(user);
+
+    content.innerHTML = `
+      <h1>🎯 Misiones</h1>
+      <p>Completa misiones diarias y semanales para ganar XP y Nexus Coins.</p>
+
+      <h3 class="mt-24">Misión del día</h3>
+      <div class="card-grid">
+        ${user.interests.map(catId => {
+          const m = MISSIONS_BY_CATEGORY[catId];
+          const cat = categoryById(catId);
+          return `
+            <div class="card">
+              <div class="badge">${cat.icon} ${cat.name}</div>
+              <h3 class="mt-8">${m.text}</h3>
+              <div class="reward">
+                <span>+${m.xp} XP</span><span>+${m.coins} Coins</span>
+              </div>
+              ${missionDone
+                ? `<span class="badge success">Completada hoy</span>`
+                : `<button class="btn btn-primary btn-sm" data-cat="${catId}">Comenzar</button>`}
+            </div>`;
+        }).join("")}
+      </div>
+
+      <h3 class="mt-24">Misiones semanales <span class="badge">Próximamente</span></h3>
+      <div class="card muted">Esta sección se conectará a un sistema de misiones rotativas desde el backend.</div>
+    `;
+
+    content.querySelectorAll("[data-cat]").forEach(btn => {
+      btn.onclick = () => {
+        const catId = btn.getAttribute("data-cat");
+        completeDailyMission(user, MISSIONS_BY_CATEGORY[catId]);
+        window.location.reload();
+      };
+    });
+  }
+</script>
+</body>
+</html>

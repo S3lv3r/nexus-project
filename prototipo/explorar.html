@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explorar — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app-shell-root"></div>
+
+<script src="js/app.js"></script>
+<script src="js/mentor.js"></script>
+<script>
+  const user = initShell("explorar.html");
+  if(user){
+    const content = document.getElementById("page-content");
+    const notInterested = CATEGORIES.filter(c => !user.interests.includes(c.id));
+    const interested = CATEGORIES.filter(c => user.interests.includes(c.id));
+
+    content.innerHTML = `
+      <h1>🧭 Explora algo nuevo</h1>
+      <p>Descubre cómo conceptos de tus áreas favoritas conectan con otros temas.</p>
+
+      <div class="card mt-16">
+        <h3>Porque te interesa ${categoryNames(user.interests).join(", ") || "aprender"}...</h3>
+        <p>Quizá te interese explorar también:</p>
+        <div class="category-grid" style="padding:0;">
+          ${notInterested.slice(0,4).map(c => `
+            <div class="category-card">
+              <div class="icon">${c.icon}</div>
+              <h3>${c.name}</h3>
+              <p>${c.desc}</p>
+              <button class="btn btn-sm" data-add="${c.id}">${user.isGuest ? "Probar examen de nivel" : "Agregar a mis intereses"}</button>
+            </div>`).join("")}
+        </div>
+      </div>
+
+      <h2 class="mt-24">Tus categorías activas</h2>
+      <div class="category-grid" style="padding:0;">
+        ${interested.map(c => `
+          <div class="category-card">
+            <div class="icon">${c.icon}</div>
+            <h3>${c.name}</h3>
+            <p>${c.desc}</p>
+            <a href="aprender.html" class="btn btn-sm">Continuar aprendiendo</a>
+          </div>`).join("")}
+      </div>
+    `;
+
+    content.querySelectorAll("[data-add]").forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.getAttribute("data-add");
+        if(user.isGuest){
+          window.location.href = "diagnostico.html?cat=" + id;
+          return;
+        }
+        if(!user.interests.includes(id)){
+          user.interests.push(id);
+          saveUser(user);
+          toast("Categoría agregada a tus intereses.");
+          unlockAchievement(user, "explorer");
+          window.location.reload();
+        }
+      };
+    });
+  }
+</script>
+</body>
+</html>

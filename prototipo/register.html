@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crear cuenta — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="landing-header">
+  <a href="index.html" class="logo">✕ NEXUS</a>
+</header>
+
+<div class="container mt-32">
+  <form class="form-card" id="register-form" onsubmit="handleRegisterSubmit(event)">
+    <h2 class="text-center mb-16">Crear cuenta</h2>
+    <p id="reg-error" class="mt-8" style="color:var(--danger); font-size:.85rem;"></p>
+
+    <div class="field">
+      <label>Nombre</label>
+      <input type="text" id="reg-name" placeholder="Tu nombre">
+    </div>
+    <div class="field">
+      <label>Nombre de usuario</label>
+      <input type="text" id="reg-username" placeholder="usuario123">
+    </div>
+    <div class="field">
+      <label>Correo</label>
+      <input type="email" id="reg-email" placeholder="tucorreo@ejemplo.com">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="reg-password">
+    </div>
+    <div class="field">
+      <label>Confirmar contraseña</label>
+      <input type="password" id="reg-confirm">
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="reg-terms">
+      <label for="reg-terms" style="margin:0;">Acepto los términos y condiciones</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block mt-8">Crear cuenta</button>
+
+    <div class="mt-24 text-center muted">o continúa con</div>
+    <div class="row mt-8" style="justify-content:center;">
+      <!-- BACKEND: integrar OAuth real -->
+      <button type="button" class="btn" disabled>Google (próximamente)</button>
+      <button type="button" class="btn" disabled>Apple (próximamente)</button>
+    </div>
+
+    <p class="mt-24 text-center">¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
+  </form>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

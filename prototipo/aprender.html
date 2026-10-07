@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aprender — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app-shell-root"></div>
+
+<script src="js/app.js"></script>
+<script src="js/mentor.js"></script>
+<script>
+  const user = initShell("aprender.html");
+  if(user){
+    const content = document.getElementById("page-content");
+
+    function renderMapFor(catId){
+      const cat = categoryById(catId);
+      const modules = MODULES_BY_CATEGORY[catId] || [];
+      const progressKey = "_moduleProgress_" + catId;
+      const completed = user[progressKey] || [];
+
+      return `
+        <div class="card mt-16">
+          <h3>${cat.icon} ${cat.name} — Mapa de progreso</h3>
+          <div class="option-list">
+            ${modules.map((m, i) => {
+              const done = completed.includes(i);
+              return `
+              <div class="option-item ${done ? "correct" : ""}" data-cat="${catId}" data-idx="${i}" style="cursor:pointer; display:flex; justify-content:space-between;">
+                <span>${i+1}. ${m}</span>
+                <span>${done ? "✔ Completado" : "Marcar como visto"}</span>
+              </div>`;
+            }).join("")}
+          </div>
+        </div>`;
+    }
+
+    content.innerHTML = `
+      <h1>📚 Aprender</h1>
+      <p>Cada categoría tiene su propio mapa de módulos. Se actualiza según tus intereses.</p>
+      ${user.interests.map(renderMapFor).join("")}
+    `;
+
+    content.querySelectorAll("[data-cat]").forEach(item => {
+      item.onclick = () => {
+        const catId = item.getAttribute("data-cat");
+        const idx = parseInt(item.getAttribute("data-idx"));
+        const key = "_moduleProgress_" + catId;
+        user[key] = user[key] || [];
+        if(!user[key].includes(idx)){
+          user[key].push(idx);
+          addXP(user, 30);
+          logActivity(user, "Completó un módulo de aprendizaje");
+          toast("Módulo marcado como visto. +30 XP");
+        }
+        saveUser(user);
+        window.location.reload();
+      };
+    });
+  }
+</script>
+</body>
+</html>

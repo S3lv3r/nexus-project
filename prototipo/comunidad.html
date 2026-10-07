@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comunidad — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app-shell-root"></div>
+
+<script src="js/app.js"></script>
+<script src="js/mentor.js"></script>
+<script>
+  const SAMPLE_POSTS = {
+    trading: [{ user: "Valeria M.", text: "Análisis de BTC: parece estar respetando un soporte importante.", reactions: 12 }],
+    cine: [{ user: "Diego R.", text: "¿Qué opinan de esta película? El montaje del segundo acto es brutal.", reactions: 8 }],
+    gaming: [{ user: "Sofía T.", text: "¿Cuál fue el mejor juego de esta generación para ustedes?", reactions: 20 }],
+    libros: [{ user: "Andrés P.", text: "¿Qué libro recomendarían para entrar al realismo mágico?", reactions: 6 }],
+    musica: [{ user: "Camila G.", text: "Compartan su álbum favorito de esta década.", reactions: 9 }],
+    historia: [{ user: "Luis F.", text: "¿Qué evento histórico creen que está subestimado?", reactions: 5 }],
+    ciencia: [{ user: "Ana K.", text: "¿Cuál es el experimento más elegante que conocen?", reactions: 7 }],
+    cultura: [{ user: "Marco V.", text: "Dato curioso del día: ¿lo sabían?", reactions: 4 }],
+  };
+
+  const user = initShell("comunidad.html");
+  if(user){
+    const content = document.getElementById("page-content");
+    content.innerHTML = `
+      <h1>👥 Comunidad</h1>
+      <p>Publicaciones, preguntas y análisis organizados por categoría. <!-- COMUNIDAD: backend pendiente --></p>
+
+      <div class="card mt-16">
+        <h3>Crear publicación</h3>
+        <textarea id="new-post" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-alt); color:var(--text);" placeholder="Comparte un análisis, pregunta o comentario..."></textarea>
+        <button class="btn btn-primary mt-8" id="post-btn">Publicar</button>
+      </div>
+
+      <div id="community-feed" class="mt-24"></div>
+    `;
+
+    function renderFeed(){
+      const feed = document.getElementById("community-feed");
+      feed.innerHTML = user.interests.map(catId => {
+        const cat = categoryById(catId);
+        const posts = SAMPLE_POSTS[catId] || [];
+        const userPosts = user._communityPosts && user._communityPosts[catId] || [];
+        return `
+          <div class="card mt-16">
+            <h3>${cat.icon} ${cat.name}</h3>
+            ${[...userPosts, ...posts].map(p => `
+              <div class="mt-8" style="border-bottom:1px solid var(--border); padding-bottom:8px;">
+                <strong>${p.user}</strong>
+                <p style="margin:4px 0;">${p.text}</p>
+                <span class="muted">❤️ ${p.reactions || 0} reacciones</span>
+              </div>`).join("")}
+          </div>`;
+      }).join("");
+    }
+    renderFeed();
+
+    document.getElementById("post-btn").onclick = () => {
+      const text = document.getElementById("new-post").value.trim();
+      if(!text) return;
+      user._communityPosts = user._communityPosts || {};
+      const cat = user.interests[0];
+      user._communityPosts[cat] = user._communityPosts[cat] || [];
+      user._communityPosts[cat].unshift({ user: user.name || user.username, text, reactions: 0 });
+      saveUser(user);
+      addXP(user, 10);
+      document.getElementById("new-post").value = "";
+      renderFeed();
+      toast("Publicación creada. +10 XP");
+    };
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Progreso — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app-shell-root"></div>
+
+<script src="js/app.js"></script>
+<script src="js/mentor.js"></script>
+<script>
+  const user = initShell("progreso.html", { requireAuth: true });
+  if(user){
+    const content = document.getElementById("page-content");
+    const xpPct = Math.round((user.xp / user.xpToNext) * 100);
+
+    content.innerHTML = `
+      <h1>📊 Progreso</h1>
+
+      <div class="card-grid mt-16">
+        <div class="card stat-card"><div class="value">${user.level}</div><div class="label">Nivel (${user.levelLabel})</div></div>
+        <div class="card stat-card"><div class="value">${user.xp}/${user.xpToNext}</div><div class="label">XP</div></div>
+        <div class="card stat-card"><div class="value">${user.achievements.length}</div><div class="label">Logros</div></div>
+        <div class="card stat-card"><div class="value">${user.streak}</div><div class="label">Racha</div></div>
+      </div>
+      <div class="progress-bar mt-16"><div style="width:${xpPct}%"></div></div>
+
+      <h3 class="mt-24">Habilidades por categoría</h3>
+      <div class="card-grid">
+        ${user.interests.map(catId => {
+          const cat = categoryById(catId);
+          const modules = MODULES_BY_CATEGORY[catId] || [];
+          const progressKey = "_moduleProgress_" + catId;
+          const completed = (user[progressKey] || []).length;
+          const pct = modules.length ? Math.round((completed / modules.length) * 100) : 0;
+          return `
+            <div class="card">
+              <h3>${cat.icon} ${cat.name}</h3>
+              <div class="progress-bar mt-8"><div style="width:${pct}%"></div></div>
+              <p class="mt-8">${completed} / ${modules.length} módulos completados</p>
+            </div>`;
+        }).join("")}
+      </div>
+
+      <h3 class="mt-24">Actividad reciente</h3>
+      <div class="card">
+        ${user.activity.length
+          ? `<ul>${user.activity.map(a => `<li>${a.text} — <span class="muted">${new Date(a.date).toLocaleString()}</span></li>`).join("")}</ul>`
+          : `<p class="muted">Aún no hay actividad registrada.</p>`}
+      </div>
+    `;
+  }
+</script>
+</body>
+</html>

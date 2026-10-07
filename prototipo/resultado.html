@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tu nivel de trading — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="landing-header">
+  <a href="index.html" class="logo">✕ NEXUS</a>
+</header>
+
+<div class="container mt-32" id="resultado-root"></div>
+
+<script src="js/app.js"></script>
+<script>
+  const loggedUser = getUser();
+  const guestResult = JSON.parse(sessionStorage.getItem("edu_guest_diagnostico") || "null");
+
+  let d, isGuestResult = false, user;
+
+  if(loggedUser && loggedUser.diagnosticoCompleted){
+    user = loggedUser;
+    d = user.diagnostico;
+  } else if(guestResult){
+    isGuestResult = true;
+    user = getGuestUser();
+    d = guestResult;
+  } else {
+    window.location.href = "diagnostico.html";
+  }
+
+  if(d){
+    const cat = categoryById(d.category) || {};
+    const modules = MODULES_BY_CATEGORY[d.category] || [];
+
+    let extraStats = "";
+    if(d.category === "trading"){
+      extraStats = `
+        <div class="card-grid mt-16">
+          <div class="card stat-card"><div class="value">45%</div><div class="label">Análisis técnico</div></div>
+          <div class="card stat-card"><div class="value">70%</div><div class="label">Gestión de riesgo</div></div>
+          <div class="card stat-card"><div class="value">60%</div><div class="label">Criptomonedas</div></div>
+          <div class="card stat-card"><div class="value">30%</div><div class="label">Psicología</div></div>
+        </div>`;
+    }
+
+    document.getElementById("resultado-root").innerHTML = `
+      <div class="text-center">
+        <h1>Tu nivel real en ${cat.name || "esta categoría"}</h1>
+        <p>🧠 ${d.level} · Conocimiento verificado: <strong>${d.knowledge}%</strong></p>
+      </div>
+
+      <div class="card mt-16 text-center">
+        <p class="muted">Rango de conocimiento</p>
+        <div class="progress-bar" style="height:16px;"><div style="width:${d.knowledge}%"></div></div>
+        <div class="row mt-8" style="justify-content:space-between; font-size:.78rem; color:var(--text-muted);">
+          <span>Principiante (0–45%)</span><span>Intermedio (46–75%)</span><span>Avanzado (76–100%)</span>
+        </div>
+      </div>
+
+      <div class="card-grid mt-16">
+        <div class="card stat-card"><div class="value">${d.knowledge}%</div><div class="label">Conocimiento</div></div>
+        <div class="card stat-card"><div class="value">${d.decisionMaking}%</div><div class="label">Toma de decisiones</div></div>
+        <div class="card stat-card"><div class="value">${d.analyticalThinking}%</div><div class="label">Pensamiento analítico</div></div>
+        <div class="card stat-card"><div class="value">Pendiente</div><div class="label">Constancia</div></div>
+      </div>
+
+      ${extraStats}
+
+      <div class="card mt-24">
+        <h3>Tu ruta recomendada — ${cat.icon || ""} ${cat.name || ""}</h3>
+        <ol>
+          ${modules.slice(0,4).map(m => `<li>${m}</li>`).join("")}
+        </ol>
+      </div>
+
+      ${isGuestResult ? `
+        <div class="guest-banner mt-24">
+          Este resultado <strong>no se ha guardado</strong> porque no iniciaste sesión.
+          <a href="register.html">Crea una cuenta gratis</a> para guardar tu nivel, ganar XP,
+          subir de nivel, personalizar tu experiencia y llevar tu progreso de una sesión a otra.
+        </div>
+        <div class="row mt-16">
+          <a href="register.html" class="btn btn-primary">Crear cuenta y guardar mi progreso</a>
+          <a href="index.html" class="btn">Seguir explorando como invitado</a>
+        </div>
+      ` : `
+        <a href="index.html" class="btn btn-primary mt-8">Ir a mi Inicio</a>
+      `}
+    `;
+  }
+</script>
+</body>
+</html>

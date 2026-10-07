@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading — Nexus</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app-shell-root"></div>
+
+<script src="js/app.js"></script>
+<script src="js/mentor.js"></script>
+<script>
+  const user = initShell("trading.html");
+  if(user){
+    const content = document.getElementById("page-content");
+    if(!user.interests.includes("trading")){
+      content.innerHTML = `
+        <h1>📈 Trading</h1>
+        <p>Esta sección se enfoca en trading y finanzas. Aún no la has agregado a tus intereses.</p>
+        <button class="btn btn-primary" id="add-trading">Agregar Trading a mis intereses</button>`;
+      document.getElementById("add-trading").onclick = () => {
+        user.interests.push("trading");
+        saveUser(user);
+        window.location.reload();
+      };
+    } else {
+      content.innerHTML = `
+        <h1>📈 Trading y Finanzas</h1>
+        <p>Todo aquí es <strong>simulado</strong>. No se ejecutan operaciones reales ni se entrega dinero real.</p>
+        <div class="card-grid mt-16">
+          <div class="card">
+            <h3>🧮 Simulador</h3>
+            <p>Practica operaciones con capital virtual.</p>
+            <a href="simulador.html" class="btn btn-sm">Abrir simulador</a>
+          </div>
+          <div class="card">
+            <h3>📊 Mercados</h3>
+            <p>Explora activos ficticios: cripto, acciones, ETFs.</p>
+            <a href="mercados.html" class="btn btn-sm">Ver mercados</a>
+          </div>
+          <div class="card">
+            <h3>📉 Análisis</h3>
+            <p>Aprende a leer gráficos y aplicar indicadores.</p>
+            <a href="analisis.html" class="btn btn-sm">Ver análisis</a>
+          </div>
+          <div class="card">
+            <h3>🛡️ Gestión de riesgo</h3>
+            <p>Módulo educativo sobre cómo proteger tu capital.</p>
+            <a href="aprender.html" class="btn btn-sm">Ir al módulo</a>
+          </div>
+        </div>
+      `;
+    }
+  }
+</script>
+</body>
+</html>
