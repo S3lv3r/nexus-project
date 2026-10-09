@@ -4,10 +4,12 @@ import { usePlatform } from '../context/PlatformContext'
 import { CATEGORIES, COURSE_STAGES, MODULES_BY_CATEGORY } from '../data/catalog'
 import './LearnPage.css'
 
-const UNITS = COURSE_STAGES.trading.map((title, unitIndex) => ({
-  title,
-  lessons: MODULES_BY_CATEGORY.trading.slice(unitIndex * 4, unitIndex * 4 + 4),
-}))
+const UNITS = COURSE_STAGES.trading
+  .map((title, unitIndex) => ({
+    title,
+    lessons: MODULES_BY_CATEGORY.trading.slice(unitIndex * 4, unitIndex * 4 + 4),
+  }))
+  .filter((unit) => unit.lessons.length > 0)
 const LESSONS = MODULES_BY_CATEGORY.trading.map((title, index) => ({ title, unitIndex: Math.floor(index / 4) }))
 const UNIT_COLORS = ['#45b895', '#eead48', '#638ef3', '#a179e8', '#e87971']
 const CATEGORY_GUIDES: Record<string, string[]> = {
@@ -76,6 +78,7 @@ export const LearnPage: React.FC = () => {
 
   const makeTrail = (unitIndex: number) => {
     const unit = UNITS[unitIndex]
+    if (!unit || !unit.lessons.length) return null
     const objective = CATEGORY_GUIDES.trading[unitIndex]
     const start = UNITS.slice(0, unitIndex).reduce((sum, item) => sum + item.lessons.length, 0)
     const xs = [50, 72, 55, 30, 43, 68, 51]
@@ -244,7 +247,7 @@ export const LearnPage: React.FC = () => {
 
   if (view === 'result') {
     const experienced = answers[0] === 0 && answers[1] === 0
-    const recommended = experienced ? 8 : 2
+    const recommended = experienced ? Math.min(8, totalLessons - 1) : Math.min(2, totalLessons - 1)
     return <div className="lm-page lm-flow-wrap">{returnHomeButton}<section className="lm-flow-card"><button className="lm-back" onClick={openPath}>← Volver al camino</button><span className="lm-eyebrow">Tu recomendación</span><div className="lm-result-icon"><i className="fa-solid fa-compass" /></div><h1>Tu punto de partida</h1><h2>{experienced ? 'Principiante con experiencia' : 'Principiante'}</h2><p>Te recomendamos avanzar a tu ritmo, construyendo una base clara antes de explorar nuevas herramientas.</p><div className="lm-recommendation"><div><strong>{LESSONS[recommended].title}</strong><small>Etapa {LESSONS[recommended].unitIndex + 1} · Trading y Finanzas</small></div><span>Recomendado</span></div><div className="lm-flow-footer"><span>Siempre puedes explorar otros temas.</span><button className="platform-btn-primary" onClick={() => openLesson(recommended)}>Ir a mi lección →</button></div></section></div>
   }
 

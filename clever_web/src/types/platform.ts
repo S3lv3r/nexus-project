@@ -78,6 +78,8 @@ export interface UserProfile {
   publicProfile: Record<string, boolean>
   activity: UserActivity[]
   moduleProgress: Record<string, number[]>
+  learningStyle?: string
+  lessonSurveys?: Record<string, Record<number, { clarity?: number | null; nextStep?: string; completedAt?: number }>>
   _demoPassword?: string
 }
 
