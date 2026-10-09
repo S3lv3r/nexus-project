@@ -114,6 +114,59 @@ export const MODULES_BY_CATEGORY: Record<string, string[]> = {
   ],
 }
 
+export const COURSE_STAGES: Record<string, string[]> = {
+  trading: [
+    'Primeros Pasos',
+    'Criptomonedas y Redes',
+    'Lectura de Mercado',
+    'Trading y Gestión',
+    'Indicadores y Volumen',
+    'Práctica y Simulación',
+  ],
+  gaming: [
+    'Evolución y Plataformas',
+    'Mecánicas y Niveles',
+    'Estudios y Economía',
+    'Análisis de la Industria',
+  ],
+  cine: [
+    'Historia del Cine',
+    'Lenguaje y Montaje',
+    'Dirección y Composición',
+    'Crítica y Apreciación',
+  ],
+  libros: [
+    'Movimientos y Épocas',
+    'Autores y Géneros',
+    'Estructura y Retórica',
+    'Crítica e Interpretación',
+  ],
+  musica: [
+    'Ritmo y Armonía',
+    'Géneros y Escenas',
+    'Grabación y Producción',
+    'Estructura Musical',
+  ],
+  historia: [
+    'Civilizaciones y Orígenes',
+    'Rutas y Conexiones',
+    'Revoluciones y Cambios',
+    'Mundo Contemporáneo',
+  ],
+  ciencia: [
+    'Método y Preguntas',
+    'Leyes Físicas',
+    'Materia y Naturaleza',
+    'Pensamiento Crítico',
+  ],
+  cultura: [
+    'Ideas y Actualidad',
+    'Filosofía y Preguntas',
+    'Arte y Sociedad',
+    'Patrones y Paradojas',
+  ],
+}
+
 export const MISSIONS_BY_CATEGORY: Record<string, Mission> = {
   trading: {
     text: 'Identifica una zona de soporte en el gráfico y evalúa la relación riesgo/beneficio.',
