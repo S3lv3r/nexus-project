@@ -17,7 +17,7 @@ const TUTORIALS: Record<TutorialPage, { label: string; steps: TutorialStep[] }> 
     { title: 'Top Ranking de Usuarios', text: 'Escala a lo largo de tu jornada en el Top Ranking de Usuarios.', target: '[data-tour="home-ranking"]' },
   ] },
   learn: { label: 'Aprender', steps: [
-    { title: 'Elige tu camino', text: 'Explora tu camino recomendado según tus intereses.', target: '.lm-feature' },
+    { title: 'Sigue donde lo dejaste', text: 'Explora tu camino recomendado según tus intereses.', target: '.lm-feature' },
     { title: 'Elige tu camino', text: 'Explora mundos bastos de información sobre temas interesantes.', target: '.lm-more-paths' },
     { title: 'Personaliza la experiencia', text: 'Ajusta tu experiencia de aprendizaje cuando quieras.', target: 'main .lm-style-chip' },
     { title: 'Desbloquea funciones', text: 'A lo largo de avanzar en tus caminos desbloquearás funciones en la página, revísalos!', target: null },
@@ -51,7 +51,6 @@ export const PageTutorial: React.FC = () => {
   const [step, setStep] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
   const [target, setTarget] = useState<HTMLElement | null>(null)
-  const [buttonPosition, setButtonPosition] = useState<React.CSSProperties>({ top: 72, left: 12 })
   const [panelPosition, setPanelPosition] = useState<React.CSSProperties>({ top: 120, left: 12 })
 
   const close = useCallback(() => {
@@ -74,24 +73,6 @@ export const PageTutorial: React.FC = () => {
       return () => window.clearTimeout(timer)
     }
   }, [page, location.key, start])
-
-  useEffect(() => {
-    if (!page) return
-    const placeButton = () => {
-      const heading = document.querySelector<HTMLElement>('main h1, main h2')
-      const rect = heading?.getBoundingClientRect()
-      if (!rect) return
-      setButtonPosition({ top: Math.max(68, rect.top), left: Math.max(12, Math.min(rect.right + 12, window.innerWidth - 104)) })
-    }
-    const frame = window.requestAnimationFrame(placeButton)
-    window.addEventListener('resize', placeButton)
-    window.addEventListener('scroll', placeButton, true)
-    return () => {
-      window.cancelAnimationFrame(frame)
-      window.removeEventListener('resize', placeButton)
-      window.removeEventListener('scroll', placeButton, true)
-    }
-  }, [page, location.key])
 
   useEffect(() => {
     if (!isOpen || !page) return
@@ -169,7 +150,7 @@ export const PageTutorial: React.FC = () => {
 
   return <>
     <style>{`.tutorial-target{position:relative;z-index:61!important;outline:3px solid var(--primary);outline-offset:5px;border-radius:12px;box-shadow:0 0 0 9999px rgba(5,10,20,.38),0 0 24px color-mix(in srgb,var(--primary) 55%,transparent);animation:tutorial-pulse 1.7s ease-in-out infinite alternate}${isPanelOnlyStep ? '.tutorial-target{outline:none!important;box-shadow:none!important;animation:none!important}' : ''}@keyframes tutorial-pulse{from{outline-offset:3px}to{outline-offset:7px}}@media(prefers-reduced-motion:reduce){.tutorial-target{animation:none}}`}</style>
-    {!isOpen && <button type="button" data-tutorial-launcher="true" onClick={start} style={buttonPosition} className="fixed z-30 inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-[var(--text)] shadow-md transition hover:border-[var(--primary)] hover:text-[var(--primary)]" aria-label={`Reproducir tutorial de ${tutorial.label}`}>
+    {!isOpen && <button type="button" data-tutorial-launcher="true" onClick={start} className="fixed bottom-5 left-3 z-30 inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-[var(--text)] shadow-md transition hover:border-[var(--primary)] hover:text-[var(--primary)] sm:bottom-6 sm:left-5" aria-label={`Reproducir tutorial de ${tutorial.label}`}>
       <i className="fa-regular fa-circle-question text-[var(--primary)]"></i><span>Tutorial</span>
     </button>}
     {isOpen && <div className="fixed inset-0 z-[62] pointer-events-none">
