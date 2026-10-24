@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { SceneCard } from '../SceneCard'
-import { GoldTankScene } from '../scenes/GoldTankScene'
+import { SupplyScene } from '../scenes/SupplyScene'
 import { useSmoothNumber } from '../useSmoothNumber'
 import { MAX_SUPPLY, clamp } from '../atlasData'
 
-/** Suministro → contenedor de oro que se llena (emitido / máximo de 21 millones) */
+/** Suministro → barra de llenado (emitido / máximo de 21 millones) */
 export const SupplyCard: React.FC<{ value: number; className?: string }> = ({ value, className = '' }) => {
-  // al aparecer, el contenedor parte vacío y se llena hasta su nivel
+  // al aparecer, la barra parte vacía y se llena hasta su nivel
   const [ready, setReady] = useState(false)
   useEffect(() => {
     const id = requestAnimationFrame(() => setReady(true))
@@ -26,7 +26,7 @@ export const SupplyCard: React.FC<{ value: number; className?: string }> = ({ va
       labelColor="#d97706"
       className={className}
     >
-      <GoldTankScene value={s} />
+      <SupplyScene value={s} />
     </SceneCard>
   )
 }

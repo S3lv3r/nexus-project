@@ -62,7 +62,7 @@ export const cssVars = (vars: Record<string, string | number>): CSSProperties =>
 /* ------------------------------------------------------------------ */
 
 export const sentimentLabel = (v: number) =>
-  v <= 25 ? 'Tormenta' : v <= 45 ? 'Nublado' : v <= 60 ? 'Neutral' : v <= 80 ? 'Soleado' : 'Muy optimista'
+  v <= 25 ? 'Muy pesimista' : v <= 45 ? 'Pesimista' : v <= 60 ? 'Neutral' : v <= 80 ? 'Optimista' : 'Muy optimista'
 export const volatilityLabel = (v: number) => (v < 34 ? 'Baja' : v < 67 ? 'Moderada' : 'Alta')
 export const uncertaintyLabel = volatilityLabel
 export const trendLabel = (v: number) => (v < 34 ? 'Bajista' : v < 67 ? 'Neutral' : 'Alcista')
@@ -102,9 +102,12 @@ export function sampleColor(stops: Array<[number, string]>, v: number): string {
   return mixHex(last, last, 0)
 }
 
+// con un tramo lima entre el ámbar y el verde: mezclarlos directamente da un olivo apagado
 const GOOD_STOPS: Array<[number, string]> = [
   [0, '#dc2626'],
+  [35, '#ea580c'],
   [50, '#d97706'],
+  [68, '#65a30d'],
   [100, '#16a34a'],
 ]
 /** Rojo → ámbar → verde (valor alto = bueno). */

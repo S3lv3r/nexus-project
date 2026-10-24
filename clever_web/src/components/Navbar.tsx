@@ -100,6 +100,19 @@ export const Navbar: React.FC = () => {
           >
             Comunidad
           </NavLink>
+          <NavLink
+                  to="/analisis"
+                  className={({ isActive }) =>
+                    `px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                      isActive
+                        ? 'bg-[var(--surface)] text-[var(--text)] font-semibold border border-[var(--border)]'
+                        : 'text-[var(--text-muted)] hover:text-[var(--text)]'
+                    }`
+                  }
+                >
+                  <i className="fa-solid fa-magnifying-glass-chart w-4 text-[var(--text-muted)]"></i>
+                  <span>Análisis Técnico</span>
+            </NavLink>
 
           <div className="relative">
             <button
@@ -122,15 +135,6 @@ export const Navbar: React.FC = () => {
                 >
                   <i className="fa-solid fa-bullseye w-4 text-[var(--text-muted)]"></i>
                   <span>Misiones</span>
-                </Link>
-
-                <Link
-                  to="/analisis"
-                  onClick={() => setIsMoreOpen(false)}
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--text)] hover:bg-[var(--bg-alt)]"
-                >
-                  <i className="fa-solid fa-magnifying-glass-chart w-4 text-[var(--text-muted)]"></i>
-                  <span>Análisis Técnico</span>
                 </Link>
 
                 <Link

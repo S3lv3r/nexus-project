@@ -1,6 +1,6 @@
 import React from 'react'
 import { SceneCard } from '../SceneCard'
-import { ThermoScene } from '../scenes/ThermoScene'
+import { FearGreedScene } from '../scenes/FearGreedScene'
 import { useSmoothNumber } from '../useSmoothNumber'
 import { fearGreedLabel, sampleColor } from '../atlasData'
 
@@ -11,7 +11,7 @@ const STOPS: Array<[number, string]> = [
   [75, '#ea580c'],
   [100, '#dc2626'],
 ]
-/** Fear & Greed → termómetro entre el hielo y el fuego (el mercurio sube y cambia de color) */
+/** Fear & Greed → medidor vertical segmentado (de miedo extremo a codicia extrema) */
 export const FearGreedCard: React.FC<{ value: number }> = ({ value }) => {
   const v = useSmoothNumber(value)
   const color = sampleColor(STOPS, v)
@@ -28,7 +28,7 @@ export const FearGreedCard: React.FC<{ value: number }> = ({ value }) => {
       label={fearGreedLabel(v)}
       labelColor={color}
     >
-      <ThermoScene value={v} />
+      <FearGreedScene value={v} />
     </SceneCard>
   )
 }

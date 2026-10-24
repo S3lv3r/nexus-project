@@ -64,11 +64,11 @@ export const HUD_ICONS: Record<HudIconKey, React.FC<IconProps>> = {
 /** Colores pastel para los círculos de icono. */
 export type HudToneKey = 'sky' | 'violet' | 'emerald' | 'amber' | 'rose' | 'teal'
 
-export const HUD_TONES: Record<HudToneKey, { circle: string; chip: string; text: string }> = {
-  sky: { circle: 'bg-gradient-to-br from-sky-100 to-sky-200/80 text-sky-600', chip: 'bg-sky-50 text-sky-700 ring-sky-100', text: 'text-sky-700' },
-  violet: { circle: 'bg-gradient-to-br from-violet-100 to-violet-200/80 text-violet-600', chip: 'bg-violet-50 text-violet-700 ring-violet-100', text: 'text-violet-700' },
-  emerald: { circle: 'bg-gradient-to-br from-emerald-100 to-emerald-200/80 text-emerald-600', chip: 'bg-emerald-50 text-emerald-700 ring-emerald-100', text: 'text-emerald-700' },
-  amber: { circle: 'bg-gradient-to-br from-amber-100 to-amber-200/80 text-amber-600', chip: 'bg-amber-50 text-amber-700 ring-amber-100', text: 'text-amber-700' },
-  rose: { circle: 'bg-gradient-to-br from-rose-100 to-rose-200/80 text-rose-600', chip: 'bg-rose-50 text-rose-700 ring-rose-100', text: 'text-rose-700' },
-  teal: { circle: 'bg-gradient-to-br from-teal-100 to-teal-200/80 text-teal-600', chip: 'bg-teal-50 text-teal-700 ring-teal-100', text: 'text-teal-700' },
+export const HUD_TONES: Record<HudToneKey, { circle: string; chip: string; text: string; box: string; dot: string }> = {
+  sky: { circle: 'bg-gradient-to-br from-sky-100 to-sky-200/80 text-sky-600', chip: 'bg-sky-50 text-sky-700 ring-sky-100', text: 'text-sky-700', box: 'bg-sky-50 text-sky-600 ring-1 ring-sky-100', dot: 'bg-sky-400' },
+  violet: { circle: 'bg-gradient-to-br from-violet-100 to-violet-200/80 text-violet-600', chip: 'bg-violet-50 text-violet-700 ring-violet-100', text: 'text-violet-700', box: 'bg-violet-50 text-violet-600 ring-1 ring-violet-100', dot: 'bg-violet-400' },
+  emerald: { circle: 'bg-gradient-to-br from-emerald-100 to-emerald-200/80 text-emerald-600', chip: 'bg-emerald-50 text-emerald-700 ring-emerald-100', text: 'text-emerald-700', box: 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100', dot: 'bg-emerald-400' },
+  amber: { circle: 'bg-gradient-to-br from-amber-100 to-amber-200/80 text-amber-600', chip: 'bg-amber-50 text-amber-700 ring-amber-100', text: 'text-amber-700', box: 'bg-amber-50 text-amber-600 ring-1 ring-amber-100', dot: 'bg-amber-400' },
+  rose: { circle: 'bg-gradient-to-br from-rose-100 to-rose-200/80 text-rose-600', chip: 'bg-rose-50 text-rose-700 ring-rose-100', text: 'text-rose-700', box: 'bg-rose-50 text-rose-600 ring-1 ring-rose-100', dot: 'bg-rose-400' },
+  teal: { circle: 'bg-gradient-to-br from-teal-100 to-teal-200/80 text-teal-600', chip: 'bg-teal-50 text-teal-700 ring-teal-100', text: 'text-teal-700', box: 'bg-teal-50 text-teal-600 ring-1 ring-teal-100', dot: 'bg-teal-400' },
 }

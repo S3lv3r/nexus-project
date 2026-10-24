@@ -237,7 +237,7 @@ export const AnalysisOptionCard: React.FC<AnalysisOptionCardProps> = ({
           transform:
             'perspective(1100px) translateY(var(--ty,0px)) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(var(--s,1))',
         }}
-        className={`ao-root group relative flex h-full flex-col overflow-hidden rounded-[2rem] border bg-white shadow-sm shadow-slate-200/60 transition-[transform,box-shadow,border-color] duration-200 ease-out hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 motion-reduce:transition-none ${
+        className={`ao-root group relative flex h-full flex-col overflow-hidden rounded-[2rem] border-2 bg-white shadow-sm shadow-slate-200/60 transition-[transform,box-shadow,border-color] duration-200 ease-out hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 motion-reduce:transition-none ${
           compact
             ? 'min-h-0 p-5 sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] sm:items-center sm:gap-x-4'
             : 'min-h-[380px] p-7 sm:p-8'

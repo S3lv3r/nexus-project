@@ -1,10 +1,10 @@
 import React from 'react'
 import { SceneCard } from '../SceneCard'
-import { CompassScene } from '../scenes/CompassScene'
+import { TrendScene } from '../scenes/TrendScene'
 import { useSmoothNumber } from '../useSmoothNumber'
 import { goodColor, trendLabel } from '../atlasData'
 
-/** Tendencia → brújula (la aguja sube con el mercado alcista y baja con el bajista) */
+/** Tendencia → dial semicircular (la aguja va de bajista a alcista) */
 export const TrendCard: React.FC<{ value: number }> = ({ value }) => {
   const v = useSmoothNumber(value)
 
@@ -18,7 +18,7 @@ export const TrendCard: React.FC<{ value: number }> = ({ value }) => {
       label={trendLabel(v)}
       labelColor={goodColor(v)}
     >
-      <CompassScene value={v} />
+      <TrendScene value={v} />
     </SceneCard>
   )
 }

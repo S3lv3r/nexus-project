@@ -3,6 +3,7 @@ import { OPERATIONS } from '../HudData'
 import { HudCard } from '../HudCard'
 import { HUD_ICONS } from '../HudIcons'
 import { useSlideState } from '../HudSlide'
+import { pastelGlow } from '../Hudglow'
 
 const UP_POINTS: Array<[number, number]> = [[4, 58], [24, 50], [40, 54], [62, 38], [80, 42], [104, 24], [122, 28], [156, 8]]
 const DOWN_POINTS: Array<[number, number]> = [[4, 12], [24, 18], [44, 16], [66, 34], [86, 30], [110, 50], [128, 46], [156, 62]]
@@ -11,7 +12,7 @@ const toPoints = (pts: Array<[number, number]>) => pts.map(([x, y]) => `${x},${y
 
 /** Gráfica de área que se "dibuja" de izquierda a derecha cuando la sección aparece. */
 const Trend: React.FC<{ points: Array<[number, number]>; up: boolean; active: boolean }> = ({ points, up, active }) => {
-  const color = up ? '#34d399' : '#fb7185'
+  const color = up ? '#10b981' : '#f43f5e'
   const id = up ? 'hud-buy' : 'hud-sell'
   const last = points[points.length - 1]
   return (
@@ -58,31 +59,25 @@ const Panel: React.FC<PanelProps> = ({ up, name, chip, text, active }) => {
   const Arrow = up ? HUD_ICONS.arrowUpRight : HUD_ICONS.arrowDownRight
   return (
     <article
-      className={`group grid min-h-0 flex-1 grid-cols-2 items-center gap-3 rounded-3xl p-[clamp(0.75rem,1.8vh,1.25rem)] ring-1 transition duration-300 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
-        up
-          ? 'bg-gradient-to-br from-emerald-50 to-teal-50/60 ring-emerald-100 hover:shadow-emerald-200/50'
-          : 'bg-gradient-to-br from-rose-50 to-pink-50/60 ring-rose-100 hover:shadow-rose-200/50'
+      className={`grid min-h-0 flex-1 grid-cols-2 items-center gap-3 rounded-xl p-[clamp(0.75rem,1.8vh,1.25rem)] ring-1 ${
+        up ? 'bg-gradient-to-br from-emerald-50/80 to-white/70 ring-emerald-200' : 'bg-gradient-to-br from-rose-50/80 to-white/70 ring-rose-200'
       }`}
     >
       <div className="min-w-0">
         <div className="mb-2 flex items-center gap-2.5">
-          <span
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition duration-300 group-hover:scale-110 motion-reduce:transition-none ${
-              up ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'
-            }`}
-          >
-            <Arrow className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${up ? 'bg-emerald-100/80 text-emerald-700' : 'bg-rose-100/80 text-rose-700'}`}>
+            <Arrow className="h-5 w-5" />
           </span>
-          <h3 className={`text-[clamp(0.85rem,1.9vh,1rem)] font-bold leading-tight ${up ? 'text-emerald-800' : 'text-rose-800'}`}>{name}</h3>
+          <h3 className={`text-[clamp(0.85rem,1.9vh,1rem)] font-semibold leading-tight ${up ? 'text-emerald-900' : 'text-rose-900'}`}>{name}</h3>
         </div>
         <span
-          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-            up ? 'bg-emerald-100/80 text-emerald-700' : 'bg-rose-100/80 text-rose-700'
+          className={`inline-block rounded-md px-2.5 py-0.5 text-xs font-medium ring-1 ${
+            up ? 'bg-white/70 text-emerald-700 ring-emerald-200' : 'bg-white/70 text-rose-700 ring-rose-200'
           }`}
         >
           {chip}
         </span>
-        <p className="mt-2 text-[clamp(0.75rem,1.7vh,0.9rem)] leading-snug text-slate-600">{text}</p>
+        <p className="mt-2 text-[clamp(0.75rem,1.7vh,0.9rem)] leading-snug text-slate-700">{text}</p>
       </div>
       <div className="h-full min-h-[4rem]">
         <Trend points={up ? UP_POINTS : DOWN_POINTS} up={up} active={active} />
@@ -97,13 +92,13 @@ export const OperationTypesCard: React.FC = () => {
   const Info = HUD_ICONS.info
 
   return (
-    <HudCard title="Tipos de operación" icon="swap">
+    <HudCard title="Tipos de operación" icon="swap" glow={pastelGlow('violet', 'sky', 'peach')}>
       <div className="grid min-h-0 flex-1 gap-3 md:grid-cols-2">
         <Panel up name={OPERATIONS.buy.name} chip={OPERATIONS.buy.chip} text={OPERATIONS.buy.text} active={active} />
         <Panel up={false} name={OPERATIONS.sell.name} chip={OPERATIONS.sell.chip} text={OPERATIONS.sell.text} active={active} />
       </div>
-      <p className="mt-3 flex items-start gap-2 rounded-2xl bg-violet-50/70 px-4 py-2.5 text-xs leading-snug text-slate-600 ring-1 ring-violet-100">
-        <Info className="mt-px h-4 w-4 shrink-0 text-violet-400" />
+      <p className="mt-3 flex items-start gap-2 rounded-xl bg-white/70 px-4 py-2.5 text-xs leading-snug text-slate-700 ring-1 ring-slate-200">
+        <Info className="mt-px h-4 w-4 shrink-0 text-indigo-400" />
         {OPERATIONS.note}
       </p>
     </HudCard>
