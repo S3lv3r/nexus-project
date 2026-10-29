@@ -175,7 +175,7 @@ const HeroBill: React.FC<{ onWave: () => void; wave: number }> = ({ onWave, wave
 )
 
 const FirstLessonSection: React.FC = () => (
-  <section className="space-y-10">
+  <section data-tour="home-learning" className="space-y-10">
     <SectionHeading title="Empieza tu primera lección" text="El camino de Trading y Finanzas está abierto. Entra, recórrelo y da el primer paso." />
     <Link
       to="/aprender?cat=trading"
@@ -356,7 +356,7 @@ export const HomePage: React.FC = () => {
   }
 
   const ProfileWidget = (
-    <div className="note-card relative isolate overflow-hidden">
+    <div data-tour="home-profile" className="note-card relative isolate overflow-hidden">
       <div className="relative h-24 overflow-hidden bg-[var(--ink)] text-[var(--bg)]">
         {custom.homeCredentialCover && <ProfileCover custom={custom} cover={user.cover} className="absolute inset-0 h-full" />}
         <svg viewBox="0 0 320 320" className={`absolute -right-10 -top-24 h-72 w-72 ${custom.homeCredentialCover ? 'hidden' : ''}`} aria-hidden="true">
@@ -485,6 +485,7 @@ export const HomePage: React.FC = () => {
   const mainBlocks: Record<HomeMainSection, React.ReactNode> = {
     lesson: (
     <section
+      data-tour="home-learning"
       className={`note-bill relative isolate overflow-hidden rounded-[24px] ${lessonBg === 'bill' ? 'note-paper' : lessonBg === 'paper' ? 'border border-[var(--rule)] bg-[var(--surface)]' : 'border border-transparent'}`}
       style={lessonIsDark ? LESSON_DARK_VARS : undefined}
     >
