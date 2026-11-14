@@ -5,14 +5,14 @@ import { SceneFrame, ink } from './SceneFrame'
 
 const HORIZON = 112
 const ARC_R = 58
-const SKY: Array<[number, string]> = [[0, '#5b6676'], [45, '#8399b0'], [100, '#5fa8e0']]
+const SKY: Array<[number, string]> = [[0, '#56657d'], [45, '#5f97d8'], [100, '#2b9bf4']]
 const CLOUD: Array<[number, string]> = [[0, '#64748b'], [60, '#a8b4c2'], [100, '#d5dde6']]
 const CLOUDS = [
   { y: 44, w: 46, h: 11, t: 58, d: -12 },
   { y: 62, w: 32, h: 8, t: 44, d: -30 },
   { y: 82, w: 54, h: 12, t: 70, d: -46 },
 ]
-const GROUND: Array<[number, string]> = [[0, '#6b7686'], [55, '#7bab78'], [100, '#4fae6b']]
+const GROUND: Array<[number, string]> = [[0, '#6b7686'], [55, '#52bb6a'], [100, '#22b45e']]
 const RAIN_X = [22, 40, 58, 76, 94, 112, 130, 148]
 
 export const WeatherScene: React.FC<{ value: number }> = ({ value }) => {
@@ -35,8 +35,8 @@ export const WeatherScene: React.FC<{ value: number }> = ({ value }) => {
       strength={0.55 + 0.45 * v}
       defs={
         <radialGradient id="wx-halo" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#f6b93b" stopOpacity="0.75" />
-          <stop offset="100%" stopColor="#f6b93b" stopOpacity="0" />
+          <stop offset="0%" stopColor="#ffb627" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#ffb627" stopOpacity="0" />
         </radialGradient>
       }
     >
@@ -44,10 +44,10 @@ export const WeatherScene: React.FC<{ value: number }> = ({ value }) => {
 
       <g opacity={0.2 + 0.8 * sun}>
         <circle cx={sx} cy={sy} r="24" fill="url(#wx-halo)" className="sc-breathe sc-fb sc-oc" style={animVars({ '--d': '7s', '--s': 1.08 })} />
-        <circle cx={sx} cy={sy} r="8" fill="#f8c24e" stroke={ink('#e09a1f', 80)} strokeWidth="0.9" />
+        <circle cx={sx} cy={sy} r="8" fill="#ffc233" stroke={ink('#e09a1f', 80)} strokeWidth="0.9" />
       </g>
 
-      <rect x="0" y={HORIZON} width="168" height={185 - HORIZON} fill={`color-mix(in oklab, ${ground} 26%, transparent)`} />
+      <rect x="0" y={HORIZON} width="168" height={185 - HORIZON} fill={`color-mix(in oklab, ${ground} 34%, transparent)`} />
       <line x1="0" y1={HORIZON} x2="168" y2={HORIZON} stroke="var(--ax-line)" />
 
       <g opacity={0.25 + 0.7 * cover}>

@@ -6,10 +6,10 @@ import { MistakeCard } from './MistakeCard'
 import { SectionHeading } from './SectionHeading'
 import { useReveal } from './useReveal'
 
-export const GROUP_STYLES: Record<MistakeCategory, { dot: string; icon: string }> = {
-  analysis: { dot: 'bg-sky-300 ring-sky-100', icon: 'bg-sky-50 text-sky-500 ring-sky-100' },
-  capital: { dot: 'bg-amber-300 ring-amber-100', icon: 'bg-amber-50 text-amber-500 ring-amber-100' },
-  psychology: { dot: 'bg-violet-300 ring-violet-100', icon: 'bg-violet-50 text-violet-500 ring-violet-100' },
+export const GROUP_STYLES: Record<MistakeCategory, { dot: string; icon: string; glow: string }> = {
+  analysis: { dot: 'bg-sky-300 ring-sky-100', icon: 'bg-sky-50 text-sky-500 ring-sky-100', glow: '#5b9cf0' },
+  capital: { dot: 'bg-amber-300 ring-amber-100', icon: 'bg-amber-50 text-amber-500 ring-amber-100', glow: '#f2c230' },
+  psychology: { dot: 'bg-violet-300 ring-violet-100', icon: 'bg-violet-50 text-violet-500 ring-violet-100', glow: '#a78bfa' },
 }
 
 /** Posición en la cuadrícula de 6 columnas: grupos de 3 en tres columnas, grupos de 2 en dos más anchas. */
@@ -45,6 +45,7 @@ export const CommonMistakes: React.FC = () => {
                       text={mistake.text}
                       icon={<Icon />}
                       iconTone={style.icon}
+                      glow={style.glow}
                       shown={shown}
                       index={i}
                       className={layoutFor(group.mistakes.length, i)}

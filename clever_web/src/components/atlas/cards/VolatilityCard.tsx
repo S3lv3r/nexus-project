@@ -12,7 +12,7 @@ export const VolatilityCard: React.FC<{ value: number }> = ({ value }) => {
     <SceneCard
       title="Volatilidad"
       tip="Indica qué tan fuertes son los movimientos del precio. Una volatilidad alta significa que el precio puede cambiar rápidamente."
-      tipMore={{ title: 'Indicadores que puedes usar', chips: ['Bandas de Bollinger', 'ADX'] }}
+      tipMore={{ title: 'Indicadores que puedes usar', chips: ['Bandas de Bollinger', 'ADX', 'VIX'] }}
       value={Math.round(v)}
       suffix="/100"
       label={volatilityLabel(v)}

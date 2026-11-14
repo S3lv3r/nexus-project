@@ -104,11 +104,11 @@ export function sampleColor(stops: Array<[number, string]>, v: number): string {
 
 // colores sobrios; con un tramo lima entre el ámbar y el verde (mezclarlos directamente da un olivo apagado)
 const GOOD_STOPS: Array<[number, string]> = [
-  [0, '#c2413a'],
-  [35, '#cf6a2c'],
-  [50, '#c58a1c'],
-  [68, '#6f9a2e'],
-  [100, '#2b8a57'],
+  [0, '#e5484d'],
+  [35, '#f2711c'],
+  [50, '#eaa317'],
+  [68, '#6cbf3a'],
+  [100, '#16a96a'],
 ]
 /** Rojo → ámbar → verde (valor alto = bueno). */
 export const goodColor = (v: number) => sampleColor(GOOD_STOPS, v)

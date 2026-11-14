@@ -154,9 +154,11 @@ interface IndicatorAccordionProps {
   shown: boolean
   /** id del indicador que empieza abierto */
   defaultOpen?: string
+  /** tarjeta amplia: la gráfica ocupa la mitad del ancho */
+  large?: boolean
 }
 
-export const IndicatorAccordion: React.FC<IndicatorAccordionProps> = ({ items, category, shown, defaultOpen }) => {
+export const IndicatorAccordion: React.FC<IndicatorAccordionProps> = ({ items, category, shown, defaultOpen, large = false }) => {
   const tone = INDICATOR_TONES[category]
   const [openId, setOpenId] = useState<string | null>(defaultOpen ?? null)
 
@@ -184,28 +186,32 @@ export const IndicatorAccordion: React.FC<IndicatorAccordionProps> = ({ items, c
                     aria-expanded={isOpen}
                     aria-controls={panelId}
                     onClick={() => setOpenId(isOpen ? null : item.id)}
-                    className={`group flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left focus-visible:outline-none focus-visible:ring-2 ${tone.ring}`}
+                    className={`group flex w-full items-center gap-3 rounded-2xl text-left focus-visible:outline-none focus-visible:ring-2 ${large ? 'px-6 py-5' : 'px-4 py-3.5'} ${tone.ring}`}
                   >
                     <span
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 transition duration-300 group-hover:-rotate-6 group-hover:scale-105 motion-reduce:transition-none ${tone.icon}`}
+                      className={`flex shrink-0 items-center justify-center rounded-xl ring-1 transition duration-300 group-hover:scale-105 motion-reduce:transition-none ${large ? 'h-12 w-12' : 'h-10 w-10'} ${tone.icon}`}
                     >
-                      <Icon />
+                      <Icon className={large ? 'h-6 w-6' : 'h-5 w-5'} />
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-baseline gap-x-2">
-                        <span className="text-base font-semibold text-slate-800">{item.name}</span>
-                        <span className="text-xs text-slate-400">{item.subtitle}</span>
+                        <span className={`font-semibold text-slate-800 ${large ? 'text-xl' : 'text-base'}`}>{item.name}</span>
+                        <span className={`text-slate-400 ${large ? 'text-sm' : 'text-xs'}`}>{item.subtitle}</span>
                       </span>
-                      <span className="mt-0.5 block text-sm text-slate-500">{item.measures}</span>
+                      <span className={`mt-0.5 block text-slate-500 ${large ? 'text-[15px]' : 'text-sm'}`}>{item.measures}</span>
                     </span>
                     <Chevron open={isOpen} />
                   </button>
                 </h4>
 
                 <Collapse open={isOpen} id={panelId} labelledBy={buttonId}>
-                  <div className="grid gap-4 px-4 pb-4 md:grid-cols-[minmax(0,1fr)_17rem] md:items-start">
-                    <div className="space-y-3">
-                      <p className="text-sm leading-relaxed text-slate-600">{item.explanation}</p>
+                  <div
+                    className={`grid gap-4 md:items-start ${
+                      large ? 'gap-6 px-6 pb-6 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:items-center' : 'px-4 pb-4 md:grid-cols-[minmax(0,1fr)_17rem]'
+                    }`}
+                  >
+                    <div className={large ? 'space-y-4' : 'space-y-3'}>
+                      <p className={`leading-relaxed text-slate-600 ${large ? 'text-[15px]' : 'text-sm'}`}>{item.explanation}</p>
                       <div>
                         <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Cómo leerlo</p>
                         <ReadingList items={item.reading} />
@@ -213,7 +219,7 @@ export const IndicatorAccordion: React.FC<IndicatorAccordionProps> = ({ items, c
                       {item.caution && <CautionNote text={item.caution} />}
                     </div>
                     {Illustration && (
-                      <div className={`rounded-xl p-2 ${tone.panel}`}>
+                      <div className={`${large ? 'rounded-2xl p-3 ring-1 ring-slate-100' : 'rounded-xl p-2'} ${tone.panel}`}>
                         <Illustration />
                       </div>
                     )}

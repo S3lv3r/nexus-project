@@ -8,8 +8,8 @@ interface MascotProps {
   className?: string
 }
 
-export const BULL_TONE = '#22a06b'
-export const BEAR_TONE = '#e0566b'
+export const BULL_TONE = '#13a865'
+export const BEAR_TONE = '#e5485e'
 
 const Emblem: React.FC<{ id: string; tone: string; power: number; push: string; children: React.ReactNode }> = ({ id, tone, power, push, children }) => {
   const dominant = power > 0.5

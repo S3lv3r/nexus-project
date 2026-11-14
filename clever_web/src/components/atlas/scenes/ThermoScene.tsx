@@ -3,11 +3,11 @@ import { clamp, sampleColor } from '../atlasData'
 import { animVars } from '../animVars'
 import { SceneFrame, ink } from './SceneFrame'
 
-const STOPS: Array<[number, string]> = [[0, '#2563eb'], [30, '#0891b2'], [50, '#d97706'], [75, '#ea580c'], [100, '#dc2626']]
-const ZONES = ['#2563eb', '#0891b2', '#d97706', '#ea580c', '#dc2626']
+const STOPS: Array<[number, string]> = [[0, '#2f6bff'], [30, '#12a8c9'], [50, '#f2a516'], [75, '#f2661c'], [100, '#e5383b']]
+const ZONES = ['#2f6bff', '#12a8c9', '#f2a516', '#f2661c', '#e5383b']
 const TICKS = [104, 87.5, 71, 54.5, 38]
-const COOL = '#3b82f6'
-const WARM = '#ea580c'
+const COOL = '#2f7bff'
+const WARM = '#f2661c'
 
 export const ThermoScene: React.FC<{ value: number }> = ({ value }) => {
   const color = sampleColor(STOPS, value)
@@ -23,11 +23,11 @@ export const ThermoScene: React.FC<{ value: number }> = ({ value }) => {
       defs={
         <>
           <radialGradient id="th-cool" cx="15%" cy="60%" r="60%">
-            <stop offset="0%" stopColor={COOL} stopOpacity="0.34" />
+            <stop offset="0%" stopColor={COOL} stopOpacity="0.42" />
             <stop offset="100%" stopColor={COOL} stopOpacity="0" />
           </radialGradient>
           <radialGradient id="th-warm" cx="88%" cy="55%" r="60%">
-            <stop offset="0%" stopColor={WARM} stopOpacity="0.34" />
+            <stop offset="0%" stopColor={WARM} stopOpacity="0.42" />
             <stop offset="100%" stopColor={WARM} stopOpacity="0" />
           </radialGradient>
         </>

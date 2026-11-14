@@ -18,11 +18,11 @@ export const SceneFrame: React.FC<SceneFrameProps> = ({ id, tone, accent, streng
   <svg viewBox="0 0 168 185" preserveAspectRatio="xMidYMid slice" className="h-full w-full" aria-hidden="true">
     <defs>
       <linearGradient id={`${id}-base`} x1="0" y1="0" x2="0.4" y2="1">
-        <stop offset="0%" stopColor={tone} stopOpacity={0.16 + 0.14 * strength} />
-        <stop offset="100%" stopColor={accent ?? tone} stopOpacity={0.05 + 0.08 * strength} />
+        <stop offset="0%" stopColor={tone} stopOpacity={0.24 + 0.18 * strength} />
+        <stop offset="100%" stopColor={accent ?? tone} stopOpacity={0.1 + 0.12 * strength} />
       </linearGradient>
       <radialGradient id={`${id}-wash`} cx="50%" cy="40%" r="62%">
-        <stop offset="0%" stopColor={tone} stopOpacity={0.14 + 0.2 * strength} />
+        <stop offset="0%" stopColor={tone} stopOpacity={0.2 + 0.25 * strength} />
         <stop offset="100%" stopColor={tone} stopOpacity="0" />
       </radialGradient>
       <pattern id={`${id}-dots`} width="12" height="12" patternUnits="userSpaceOnUse">

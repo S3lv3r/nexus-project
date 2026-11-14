@@ -74,7 +74,7 @@ export const IchimokuSlide: React.FC = () => {
       </HudItem>
       <HudItem lazy order={1}>
         <Reveal shown={shown}>
-          <IchimokuCard />
+          <IchimokuCard large />
         </Reveal>
       </HudItem>
     </>
@@ -93,7 +93,7 @@ export const IndicatorSlide: React.FC<{ category: Exclude<CategoryKey, 'trend'>;
         <CategoryHeader category={category} />
       </HudItem>
       <HudItem lazy order={1}>
-        <IndicatorAccordion items={[indicator]} category={category} shown={shown} defaultOpen={indicator.id} />
+        <IndicatorAccordion items={[indicator]} category={category} shown={shown} defaultOpen={indicator.id} large />
       </HudItem>
     </>
   )
