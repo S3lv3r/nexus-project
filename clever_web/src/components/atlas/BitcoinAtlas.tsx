@@ -47,9 +47,9 @@ export const BitcoinAtlas: React.FC = () => {
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background:
-            `radial-gradient(60% 50% at 12% 0%, rgba(251,191,36,${0.03 + 0.1 * (mood / 100)}), transparent 60%),` +
-            `radial-gradient(50% 45% at 92% 8%, rgba(45,212,191,${0.02 + 0.07 * (mood / 100)}), transparent 60%),` +
-            `radial-gradient(70% 60% at 50% 100%, rgba(248,113,113,${0.02 + 0.08 * ((100 - mood) / 100)}), transparent 65%)`,
+            `radial-gradient(60% 50% at 12% 0%, rgba(251,191,36,${0.05 + 0.14 * (mood / 100)}), transparent 60%),` +
+            `radial-gradient(50% 45% at 92% 8%, rgba(45,212,191,${0.04 + 0.1 * (mood / 100)}), transparent 60%),` +
+            `radial-gradient(70% 60% at 50% 100%, rgba(248,113,113,${0.04 + 0.12 * ((100 - mood) / 100)}), transparent 65%)`,
         }}
       />
 

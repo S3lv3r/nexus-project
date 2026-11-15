@@ -30,6 +30,7 @@ export const MistakesSlide: React.FC = () => {
                     text={mistake.text}
                     icon={<Icon />}
                     iconTone={style.icon}
+                    glow={style.glow}
                     shown={shown}
                     index={i}
                   />

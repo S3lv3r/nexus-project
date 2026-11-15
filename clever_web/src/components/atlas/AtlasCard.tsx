@@ -101,18 +101,22 @@ export const InfoTip: React.FC<{
             {text}
             {more && (
               <span className="mt-2.5 block border-t border-[var(--border)] pt-2.5">
-                {more.title && (
-                  <span className="mb-1.5 block text-[10.5px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-                    {more.title}
-                  </span>
-                )}
-                {more.chips && (
-                  <span className="flex flex-wrap gap-1.5">
-                    {more.chips.map((c) => (
-                      <span key={c} className="rounded-full bg-[var(--surface-alt)] px-2 py-0.5 text-[11.5px] font-medium text-[var(--text)] ring-1 ring-[var(--border)]">
-                        {c}
+                {(more.title || more.chips) && (
+                  <span className="block rounded-lg bg-[color-mix(in_oklab,#f5c542_16%,var(--bg-alt))] p-2.5 ring-1 ring-[color-mix(in_oklab,#f5c542_45%,var(--border))]">
+                    {more.title && (
+                      <span className="mb-1.5 block text-[10.5px] font-semibold uppercase tracking-wider text-[color-mix(in_oklab,#b7860b_75%,var(--text))]">
+                        {more.title}
                       </span>
-                    ))}
+                    )}
+                    {more.chips && (
+                      <span className="flex flex-wrap gap-1.5">
+                        {more.chips.map((c) => (
+                          <span key={c} className="rounded-full bg-[var(--bg-alt)] px-2 py-0.5 text-[11.5px] font-medium text-[var(--text)] ring-1 ring-[color-mix(in_oklab,#f5c542_45%,var(--border))]">
+                            {c}
+                          </span>
+                        ))}
+                      </span>
+                    )}
                   </span>
                 )}
                 {more.note && <span className="mt-1.5 block text-[12px] leading-snug text-[var(--text-muted)]">{more.note}</span>}

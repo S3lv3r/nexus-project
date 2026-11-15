@@ -7,8 +7,8 @@ const CX = 84
 const CY = 78
 const R = 44
 const TICKS = Array.from({ length: 36 }, (_, i) => i * 10)
-const UP = '#2b8a57'
-const DOWN = '#c2413a'
+const UP = '#16a96a'
+const DOWN = '#e5484d'
 
 const polar = (a: number, r: number): [number, number] => {
   const rad = (a * Math.PI) / 180
@@ -46,7 +46,7 @@ export const CompassScene: React.FC<{ value: number }> = ({ value }) => {
         ))}
       </g>
 
-      <circle cx={CX} cy={CY} r={R} fill={tint(color, 10)} stroke={ink(color, 45)} strokeOpacity="0.45" strokeWidth="1.2" />
+      <circle cx={CX} cy={CY} r={R} fill={tint(color, 14)} stroke={ink(color, 45)} strokeOpacity="0.45" strokeWidth="1.2" />
       <circle cx={CX} cy={CY} r={R - 9} fill="none" stroke="var(--ax-faint)" strokeWidth="1" />
 
       {TICKS.map((a) => {

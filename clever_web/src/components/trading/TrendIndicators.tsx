@@ -158,22 +158,22 @@ export const OtherAverages: React.FC<{ defaultOpen?: boolean }> = ({ defaultOpen
 /* Ichimoku                                                            */
 /* ------------------------------------------------------------------ */
 
-export const IchimokuCard: React.FC = () => {
+export const IchimokuCard: React.FC<{ large?: boolean }> = ({ large = false }) => {
   const Icon = INDICATOR_ICONS[ICHIMOKU.icon]
   return (
-    <article className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50/50 via-white to-white p-5 shadow-sm shadow-slate-200/50">
-      <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_18rem] md:items-center">
+    <article className={`rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50/50 via-white to-white shadow-sm shadow-slate-200/50 ${large ? 'p-6' : 'p-5'}`}>
+      <div className={`grid gap-5 md:items-center ${large ? 'gap-6 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]' : 'md:grid-cols-[minmax(0,1fr)_18rem]'}`}>
         <div>
           <div className="mb-3 flex items-center gap-3">
             <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 ${tone.icon}`}>
               <Icon className="h-6 w-6" />
             </span>
             <div>
-              <h4 className="text-lg font-semibold leading-tight text-slate-800">{ICHIMOKU.name}</h4>
+              <h4 className={`font-semibold leading-tight text-slate-800 ${large ? 'text-xl' : 'text-lg'}`}>{ICHIMOKU.name}</h4>
               <p className="text-xs text-slate-400">{ICHIMOKU.subtitle}</p>
             </div>
           </div>
-          <p className="text-sm leading-relaxed text-slate-600">{ICHIMOKU.explanation}</p>
+          <p className={`leading-relaxed text-slate-600 ${large ? 'text-[15px]' : 'text-sm'}`}>{ICHIMOKU.explanation}</p>
           <p className="mt-2 text-sm text-slate-500">
             <span className="font-semibold text-slate-600">Mide: </span>
             {ICHIMOKU.measures}
@@ -181,7 +181,7 @@ export const IchimokuCard: React.FC = () => {
           <p className="mb-1.5 mt-4 text-xs font-semibold uppercase tracking-wider text-slate-400">Cómo leerlo</p>
           <ReadingList items={ICHIMOKU.reading} />
         </div>
-        <div className="rounded-xl bg-white/80 p-2 ring-1 ring-slate-100">
+        <div className={`bg-white/80 ring-1 ring-slate-100 ${large ? 'rounded-2xl p-3' : 'rounded-xl p-2'}`}>
           <IchimokuIllustration />
         </div>
       </div>

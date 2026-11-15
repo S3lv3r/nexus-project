@@ -26,7 +26,7 @@ export const PressureCard: React.FC<{ buySell: number; risk: number }> = ({ buyS
     <section
       className="relative isolate overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]"
       style={{
-        background: `linear-gradient(90deg, color-mix(in oklab, ${BEAR_TONE} ${Math.round(6 + 24 * sellPower)}%, var(--surface)) 0%, var(--surface) 34%, var(--surface) 66%, color-mix(in oklab, ${BULL_TONE} ${Math.round(6 + 24 * buyPower)}%, var(--surface)) 100%)`,
+        background: `linear-gradient(90deg, color-mix(in oklab, ${BEAR_TONE} ${Math.round(8 + 30 * sellPower)}%, var(--surface)) 0%, var(--surface) 34%, var(--surface) 66%, color-mix(in oklab, ${BULL_TONE} ${Math.round(8 + 30 * buyPower)}%, var(--surface)) 100%)`,
       }}
     >
       <div className="grid grid-cols-2 items-center gap-x-3 gap-y-2 px-3 py-1.5 sm:grid-cols-[auto_1fr_1fr_auto] lg:grid-cols-[auto_auto_minmax(0,1fr)_auto_auto_auto]">

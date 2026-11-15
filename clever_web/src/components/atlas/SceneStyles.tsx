@@ -21,6 +21,10 @@ const CSS = `
 .sc-push{animation:sc-push var(--d,3.6s) ease-in-out infinite}
 .sc-ring{animation:sc-ring var(--d,3s) ease-out infinite}
 .sc-thrust{animation:sc-thrust var(--d,1s) ease-in-out infinite}
+.sc-pulse{animation:sc-pulse var(--d,3s) ease-in-out infinite}
+.sc-alarm{animation:sc-alarm var(--d,1.6s) ease-out infinite}
+.sc-shiver{animation:sc-shiver .24s linear infinite}
+.sc-shine{animation:sc-shine 4.5s ease-in-out infinite}
 .sc-gust{animation:sc-gust var(--d,2s) linear infinite}
 .sc-sheen{animation:sc-sheen var(--d,6s) ease-in-out infinite}
 
@@ -38,6 +42,10 @@ const CSS = `
 @keyframes sc-hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
 @keyframes sc-push{0%,100%{transform:translateX(0)}50%{transform:translateX(var(--px,3px))}}
 @keyframes sc-thrust{0%,100%{transform:scaleY(1)}50%{transform:scaleY(var(--s,1.1))}}
+@keyframes sc-pulse{0%,100%{transform:scale(1)}50%{transform:scale(var(--s,1.1))}}
+@keyframes sc-alarm{0%{transform:scale(.96);opacity:.6}100%{transform:scale(1.35);opacity:0}}
+@keyframes sc-shiver{0%,100%{transform:translateX(0)}25%{transform:translateX(-.6px)}75%{transform:translateX(.6px)}}
+@keyframes sc-shine{0%,60%{transform:translateX(-90px)}100%{transform:translateX(130px)}}
 @keyframes sc-gust{0%{transform:translateX(0);opacity:0}20%{opacity:1}100%{transform:translateX(-150px);opacity:0}}
 @keyframes sc-sheen{0%,60%{transform:translateX(-140px)}100%{transform:translateX(140px)}}
 @keyframes sc-ring{0%{transform:scale(.98);opacity:.55}100%{transform:scale(1.14);opacity:0}}

@@ -6,7 +6,7 @@ import { SceneFrame, ink } from './SceneFrame'
 const TOP = 46
 const BOTTOM = 130
 const TICKS = [0, 5, 10, 15, MAX_SUPPLY]
-const GOLD = '#c9a23f'
+const GOLD = '#e8ad1c'
 
 const levelY = (supply: number) => BOTTOM - clamp(supply / MAX_SUPPLY) * (BOTTOM - TOP)
 
@@ -23,8 +23,8 @@ export const GoldTankScene: React.FC<{ value: number }> = ({ value }) => {
       defs={
         <>
           <linearGradient id="gt-liquid" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#f2d27a" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="#b8862c" stopOpacity="0.85" />
+            <stop offset="0%" stopColor="#ffd666" stopOpacity="1" />
+            <stop offset="100%" stopColor="#c98612" stopOpacity="0.95" />
           </linearGradient>
           <clipPath id="gt-clip">
             <rect x="40" y={TOP} width="88" height={BOTTOM - TOP} rx="8" />

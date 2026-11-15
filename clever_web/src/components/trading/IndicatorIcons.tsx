@@ -105,6 +105,12 @@ export const INDICATOR_ICONS: Record<IndicatorIconKey, React.FC<{ className?: st
       <circle cx="12" cy="17" r="1.2" />
     </Svg>
   ),
+  vix: (p) => (
+    <Svg {...p}>
+      <path d="M3 19h18" opacity="0.5" />
+      <path d="M3 15l4-1 3 1 3-9 2 6 3-2 3 1" />
+    </Svg>
+  ),
   // zigzag de ondas
   elliott: (p) => (
     <Svg {...p}>

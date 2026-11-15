@@ -24,18 +24,18 @@ export const RocketScene: React.FC<{ value: number }> = ({ value }) => {
     <SceneFrame
       id={uid}
       tone={color}
-      accent="#6366f1"
+      accent="#6d5cff"
       strength={0.4 + 0.6 * t}
       defs={
         <>
           <linearGradient id={`${uid}-plume`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#fff7d6" />
-            <stop offset="40%" stopColor="#fbbf24" />
-            <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+            <stop offset="40%" stopColor="#ffb21e" />
+            <stop offset="100%" stopColor="#ff6a13" stopOpacity="0" />
           </linearGradient>
           <radialGradient id={`${uid}-glow`} cx="50%" cy="40%" r="50%">
-            <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+            <stop offset="0%" stopColor="#ffb21e" stopOpacity="0.65" />
+            <stop offset="100%" stopColor="#ff6a13" stopOpacity="0" />
           </radialGradient>
         </>
       }

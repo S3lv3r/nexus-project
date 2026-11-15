@@ -5,6 +5,7 @@ interface MistakeCardProps {
   text: string
   icon: React.ReactNode
   iconTone: string // colores pastel del icono
+  glow?: string
   shown: boolean // la sección ya entró en pantalla
   index: number // orden dentro del grupo, para la entrada escalonada
   className?: string
@@ -16,6 +17,7 @@ export const MistakeCard: React.FC<MistakeCardProps> = ({
   text,
   icon,
   iconTone,
+  glow,
   shown,
   index,
   className = '',
@@ -27,7 +29,14 @@ export const MistakeCard: React.FC<MistakeCardProps> = ({
       shown ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
     } ${className}`}
   >
-    <div className="group h-full rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm shadow-slate-200/50 transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md hover:shadow-slate-200/70 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+    <div
+      style={glow ? ({ '--glow': glow } as React.CSSProperties) : undefined}
+      className={`group h-full rounded-2xl border bg-white p-4 transition duration-300 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
+        glow
+          ? 'border-[color-mix(in_oklab,var(--glow)_45%,var(--border))] shadow-[0_0_0_1px_color-mix(in_oklab,var(--glow)_14%,transparent),0_0_22px_-6px_color-mix(in_oklab,var(--glow)_55%,transparent)] hover:shadow-[0_0_0_1px_color-mix(in_oklab,var(--glow)_24%,transparent),0_0_30px_-4px_color-mix(in_oklab,var(--glow)_65%,transparent)]'
+          : 'border-slate-200/70 shadow-sm shadow-slate-200/50 hover:border-slate-300 hover:shadow-md hover:shadow-slate-200/70'
+      }`}
+    >
       <span
         className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ring-1 transition duration-300 group-hover:-rotate-6 group-hover:scale-105 motion-reduce:transition-none ${iconTone}`}
       >

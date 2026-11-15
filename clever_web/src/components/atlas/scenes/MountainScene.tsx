@@ -18,7 +18,7 @@ export const MountainScene: React.FC<{ value: number }> = ({ value }) => {
     <SceneFrame
       id="mt"
       tone={riskColor(value)}
-      accent="#6d83c4"
+      accent="#6274f0"
       strength={0.3 + 0.5 * u}
       defs={
         <>
@@ -34,16 +34,16 @@ export const MountainScene: React.FC<{ value: number }> = ({ value }) => {
       }
     >
       <g transform="translate(0 -22)">
-        <polygon points="0,170 0,100 24,80 44,96 74,66 98,92 124,74 150,94 168,82 168,170" fill="color-mix(in oklab, #8aa0d8 22%, transparent)" />
-        <polygon points="0,170 0,114 26,96 50,112 108,64 134,98 150,88 168,108 168,170" fill="color-mix(in oklab, #6d83c4 32%, transparent)" />
+        <polygon points="0,170 0,100 24,80 44,96 74,66 98,92 124,74 150,94 168,82 168,170" fill="color-mix(in oklab, #8b9cf4 30%, transparent)" />
+        <polygon points="0,170 0,114 26,96 50,112 108,64 134,98 150,88 168,108 168,170" fill="color-mix(in oklab, #6274f0 42%, transparent)" />
         <polyline points="0,114 26,96 50,112 108,64 134,98 150,88 168,108" fill="none" stroke="var(--ax-line)" strokeWidth="1" strokeLinejoin="round" />
         {clear > 0.03 && (
           <g opacity={clear}>
             <line x1="108" y1="64" x2="108" y2="48" stroke="var(--ax-soft)" strokeWidth="1.2" strokeLinecap="round" />
-            <path d="M108 48 L117 51 L108 54 Z" fill="#22a06b" />
+            <path d="M108 48 L117 51 L108 54 Z" fill="#16a96a" />
           </g>
         )}
-        <polygon points="0,170 0,138 28,120 60,138 90,112 128,136 168,122 168,170" fill="color-mix(in oklab, #4c5f9e 42%, transparent)" />
+        <polygon points="0,170 0,138 28,120 60,138 90,112 128,136 168,122 168,170" fill="color-mix(in oklab, #4453c9 54%, transparent)" />
       </g>
 
       <rect x="0" y={fogTop} width="168" height={185 - fogTop} fill="url(#mt-fog)" opacity={0.25 + 0.75 * u} />

@@ -17,10 +17,11 @@ export type IndicatorIconKey =
   | 'kdj'
   | 'bollinger'
   | 'adx'
+  | 'vix'
   | 'elliott'
   | 'fibonacci'
 
-export type IllustrationKey = 'macd' | 'rsi' | 'kdj' | 'bollinger' | 'adx' | 'elliott' | 'fibonacci'
+export type IllustrationKey = 'macd' | 'rsi' | 'kdj' | 'bollinger' | 'adx' | 'vix' | 'elliott' | 'fibonacci'
 
 export interface Indicator {
   id: string
@@ -227,6 +228,24 @@ export const VOLATILITY: Indicator[] = [
     ],
     caution: 'Los umbrales son orientativos y el ADX por sí solo no determina la dirección.',
     illustration: 'adx',
+  },
+  {
+    id: 'vix',
+    name: 'VIX',
+    subtitle: 'Índice de volatilidad de Cboe, el "índice del miedo"',
+    icon: 'vix',
+    measures: 'La volatilidad que el mercado espera para el S&P 500 en los próximos 30 días.',
+    explanation:
+      'Lo calcula Cboe a partir de los precios de las opciones sobre el S&P 500. Se expresa en puntos que equivalen a la volatilidad anual esperada en porcentaje: un VIX de 20 significa que el mercado espera movimientos de alrededor de 20% al año.',
+    reading: [
+      'Por debajo de 20 suele asociarse con un mercado tranquilo.',
+      'Entre 20 y 30 refleja nerviosismo o incertidumbre.',
+      'Por encima de 30 se asocia con miedo; en las crisis de 2008 y 2020 superó los 80 puntos.',
+      'Suele moverse al revés que el S&P 500: cuando las acciones caen con fuerza, el VIX tiende a dispararse.',
+    ],
+    caution:
+      'Mide expectativas de movimiento, no la dirección del mercado. Además, no se puede comprar directamente: los productos que lo siguen (futuros y ETFs) se comportan distinto al índice.',
+    illustration: 'vix',
   },
 ]
 
