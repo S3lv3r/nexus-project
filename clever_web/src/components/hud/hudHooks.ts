@@ -280,6 +280,8 @@ interface GridPagerOptions {
   wheelEnabled: boolean
   stageRef: RefObject<HTMLElement | null>
   lockMs?: number
+  /** posición con la que abre (p. ej. la que pide la URL); por defecto, el primer tema y subtema */
+  initial?: { topic: number; slide: number }
 }
 
 /**
@@ -289,8 +291,8 @@ interface GridPagerOptions {
  * Al cambiar de tema se empieza siempre por su primer subtema.
  * Un gesto cambia una sola posición; la inercia del trackpad no salta de más.
  */
-export function useGridPager({ slideCounts, wheelEnabled, stageRef, lockMs = 1000 }: GridPagerOptions) {
-  const [pos, setPos] = useState({ topic: 0, slide: 0 })
+export function useGridPager({ slideCounts, wheelEnabled, stageRef, lockMs = 1000, initial }: GridPagerOptions) {
+  const [pos, setPos] = useState(() => initial ?? { topic: 0, slide: 0 })
   const posRef = useRef(pos)
   const counts = useRef(slideCounts)
   counts.current = slideCounts

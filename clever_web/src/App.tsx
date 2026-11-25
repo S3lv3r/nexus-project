@@ -27,6 +27,7 @@ import { ResultPage } from './pages/ResultPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { StockAnalysisPage } from './pages/StockAnalysisPage'
 import { CryptoAnalysisPage } from './pages/CryptoAnalysisPage'
+import { PersonalFinancePage } from './pages/PersonalFinancePage'
 import { TradingTerminalPage } from './pages/TradingTerminalPage'
 import { loadMemberPage } from './components/about/preload'
 import { api } from './services/api'
@@ -160,6 +161,7 @@ const MainAppContent: React.FC = () => {
           <Route path="/analisis" element={<AnalysisPage />} />
           <Route path="/analisis/acciones" element={<StockAnalysisPage />} />
           <Route path="/analisis/criptos" element={<CryptoAnalysisPage />} />
+          <Route path="/analisis/finanzas-personales" element={<PersonalFinancePage />} />
 
           <Route path="/simulador" element={<Navigate to="/exchange" replace />} />
 

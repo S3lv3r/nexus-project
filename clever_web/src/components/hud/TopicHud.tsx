@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { HudDots } from './HudDots'
 import { HudFit } from './HudFit'
 import { HudSidebar } from './HudSidebar'
@@ -46,6 +47,13 @@ interface TopicHudProps {
 /** Espacio bajo el HUD: separación (16) + barra de puntos (48). */
 const DOTS_BLOCK = 64
 
+/** Posición que pide la URL (?categoria=<tema>&tema=<subtema>); la primera si no existe. */
+function positionFromParams(topics: Topic[], params: URLSearchParams): { topic: number; slide: number } {
+  const topic = Math.max(0, topics.findIndex((t) => t.id === params.get('categoria')))
+  const slide = Math.max(0, topics[topic].slides.findIndex((s) => s.id === params.get('tema')))
+  return { topic, slide }
+}
+
 /**
  * HUD en dos ejes.
  *  - Temas: barra lateral. Cambian con los botones, la rueda del mouse o ↑ ↓ (las tarjetas suben o bajan).
@@ -58,11 +66,30 @@ export const TopicHud: React.FC<TopicHudProps> = ({ topics, header, label, sideb
   // en pantallas anchas la página ocupa todo el ancho de la ventana; el contenido conserva su ancho de siempre
   const naturalWidth = useViewportBreakout(rootRef, isDesktop)
   const stageHeight = useFitHeight(stageRef, isDesktop, 360, 28 + DOTS_BLOCK)
+  // la URL guarda el tema y el subtema: al recargar o compartir el enlace se abre en el mismo lugar
+  const [params, setParams] = useSearchParams()
+  const [initial] = useState(() => positionFromParams(topics, params))
   const { topic, slide, goTopic, goSlide, nextTopic, prevTopic, nextSlide, prevSlide } = useGridPager({
     slideCounts: topics.map((t) => t.slides.length),
     wheelEnabled: isDesktop,
     stageRef,
+    initial,
   })
+
+  const topicId = topics[topic].id
+  const slideId = topics[topic].slides[slide].id
+  useEffect(() => {
+    setParams(
+      (prev) => {
+        if (prev.get('categoria') === topicId && prev.get('tema') === slideId) return prev
+        const next = new URLSearchParams(prev)
+        next.set('categoria', topicId)
+        next.set('tema', slideId)
+        return next
+      },
+      { replace: true },
+    )
+  }, [topicId, slideId, setParams])
 
   // el primer tema también entra con animación
   const [ready, setReady] = useState(false)
@@ -116,8 +143,8 @@ export const TopicHud: React.FC<TopicHudProps> = ({ topics, header, label, sideb
           onPrev={prevTopic}
           onNext={nextTopic}
           className="lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:self-start"
-          hintTitle="Scrollea para cambiar de tema"
-          hintText="o usa las flechas ↑ ↓"
+          hintTitle="Cambia de categoría"
+          hintText="con la lista o con estas flechas"
           mobileGrid="grid-cols-2 sm:grid-cols-3"
           topAction={sidebarAction}
         />

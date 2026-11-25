@@ -13,7 +13,7 @@ export const StockAnalysisPage: React.FC = () => {
         <h1 className="text-xl sm:text-2xl font-bold text-[var(--text)] tracking-tight">
           Análisis de acciones
             <h2 className="mt-1 text-sm sm:text-base font-normal text-[var(--text-muted)] tracking-tight">
-              Aprende a analizar las herramientas y comportamiento de lasacciones para tomar las decisiones.
+              Aprende a analizar las herramientas y comportamiento de las acciones para tomar las decisiones.
             </h2>
         </h1>
       }
