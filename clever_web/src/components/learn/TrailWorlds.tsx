@@ -249,7 +249,7 @@ const Stamp: React.FC<{ x: number; y: number; text: string; color: string }> = (
 )
 
 export const CANDLES_KIT: WorldKit = {
-  districts: ['Cañón del Toro', 'Meseta de las Velas'],
+  districts: ['Cañón del Toro', 'Meseta de las Velas', 'Oasis del Oscilador', 'Cordillera Cripto', 'Paso del Riesgo', 'Delta DeFi'],
   stageColor: '#8f4a1f',
   finaleLabel: 'La Gran Vela',
   lane: { width: 3.5, dash: '6 10', opacity: 1 },
@@ -427,7 +427,7 @@ const TreasureChest: React.FC<{ x: number; y: number; isOpen: boolean }> = ({ x,
 }
 
 export const ISLAND_KIT: WorldKit = {
-  districts: ['Playa del Novato', 'Bahía del Capitán'],
+  districts: ['Playa del Novato', 'Bahía del Capitán', 'Arrecife de Indicadores', 'Faro Cripto', 'Cabo del Riesgo', 'Laguna DeFi'],
   stageColor: '#0b6e8a',
   finaleLabel: 'El cofre del tesoro',
   lane: { width: 60, dash: '2 9', opacity: 0.35 },

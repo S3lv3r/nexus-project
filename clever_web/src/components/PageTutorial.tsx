@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { CleverkorMascot3D } from './CleverkorMascot3D'
+import { usePlatform } from '../context/PlatformContext'
 
-type TutorialPage = 'home' | 'learn' | 'challenges' | 'exchange' | 'community'
+type TutorialPage = 'home' | 'learn' | 'homeGuest' | 'learnGuest' | 'challenges' | 'exchange' | 'community'
 
 interface TutorialStep {
   title: string
@@ -13,14 +14,24 @@ interface TutorialStep {
 const TUTORIALS: Record<TutorialPage, { label: string; steps: TutorialStep[] }> = {
   home: { label: 'Inicio', steps: [
     { title: 'Tu punto de partida', text: 'Desde aquí puedes retomar tu aprendizaje y ver qué sigue en tu camino.', target: '.platform-card' },
-    { title: 'Herramientas para avanzar', text: 'Explora las herramientas disponibles para aprender, practicar y seguir tu progreso.', target: '[data-tour="home-tools"]' },
+    { title: 'Tus temas', text: 'Revisa cuánto llevas de cada tema y entra al mapa cuando quieras.', target: '[data-tour="home-topics"]' },
     { title: 'Hazlo tuyo', text: 'Desde tu perfil puedes personalizar esta página, los temas, la barra y tu mundo de Aprender.', target: null },
   ] },
   learn: { label: 'Aprender', steps: [
-    { title: 'Tu camino de Trading y Finanzas', text: 'Aquí ves tu avance, tu nivel y el botón para continuar donde te quedaste.', target: '[data-tour="learn-hero"]' },
+    { title: 'Tu curso', text: 'Aquí ves tu avance, el tema en curso y el botón para continuar donde te quedaste.', target: '[data-tour="learn-hero"]' },
     { title: 'Tu mapa de lecciones', text: 'Avanza lección por lección. La siguiente siempre está resaltada.', target: '[data-tour="learn-map"]' },
     { title: 'Personaliza la experiencia', text: 'Ajusta tu forma de aprender cuando quieras.', target: '[data-tour="learn-style"]' },
-    { title: 'Desbloquea recursos', text: 'Al completar lecciones desbloqueas recursos para practicar. Revisa la columna de la derecha.', target: null },
+    { title: 'Tema por tema', text: 'En la columna de la derecha ves cuánto llevas de cada tema del curso.', target: null },
+  ] },
+  homeGuest: { label: 'Inicio', steps: [
+    { title: 'Bienvenido a Clever', text: 'Aquí aprendes trading, blockchain y finanzas digitales con un curso de 6 temas y 25 lecciones.', target: 'main h1' },
+    { title: 'El temario', text: 'Revisa los seis temas y las lecciones de cada uno antes de empezar.', target: '[data-tour="home-topics"]' },
+    { title: 'Crea tu cuenta', text: 'Es gratis. Con tu cuenta guardas tu avance lección por lección y personalizas la plataforma.', target: null },
+  ] },
+  learnGuest: { label: 'Aprender', steps: [
+    { title: 'El curso completo', text: 'Aquí ves cuántos temas y lecciones tiene el curso y por dónde empieza.', target: '[data-tour="learn-hero"]' },
+    { title: 'El mapa de lecciones', text: 'Explora el camino tema por tema. Para abrir una lección necesitas una cuenta gratis.', target: '[data-tour="learn-map"]' },
+    { title: 'Guarda tu avance', text: 'Crea tu cuenta para empezar por la lección 1.1 y que tu progreso quede guardado.', target: null },
   ] },
   challenges: { label: 'Desafíos', steps: [
     { title: 'Filtra los desafíos', text: 'Elige una categoría para encontrar ejercicios de tu interés.', target: 'main .no-scrollbar' },
@@ -47,7 +58,10 @@ const PATHS: Record<string, TutorialPage> = {
 
 export const PageTutorial: React.FC = () => {
   const location = useLocation()
-  const page = PATHS[location.pathname]
+  const { isGuest } = usePlatform()
+  const basePage = PATHS[location.pathname]
+  const guestPage = basePage ? (`${basePage}Guest` as TutorialPage) : undefined
+  const page: TutorialPage | undefined = isGuest && guestPage && TUTORIALS[guestPage] ? guestPage : basePage
   const [step, setStep] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
   const [target, setTarget] = useState<HTMLElement | null>(null)
@@ -68,7 +82,7 @@ export const PageTutorial: React.FC = () => {
   useEffect(() => {
     if (!page) return
     setIsOpen(false)
-    if (page === 'home') return
+    if (page !== 'learn') return
     if (localStorage.getItem(`clever_tutorial_${page}`) !== 'done') {
       const timer = window.setTimeout(start, 650)
       return () => window.clearTimeout(timer)
@@ -120,13 +134,12 @@ export const PageTutorial: React.FC = () => {
 
   useEffect(() => {
     if (!isOpen) return
-    if (!target && page === 'learn') {
+    if (!target) {
       const panelWidth = Math.min(480, window.innerWidth * 0.92)
       const panelHeight = window.innerWidth < 640 ? 220 : 190
       setPanelPosition({ top: Math.max(80, (window.innerHeight - panelHeight) / 2), left: (window.innerWidth - panelWidth) / 2, width: panelWidth })
       return
     }
-    if (!target) return
     const placePanel = () => {
       const rect = target.getBoundingClientRect()
       const panelWidth = Math.min(480, window.innerWidth * 0.92)

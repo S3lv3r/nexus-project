@@ -1,33 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { usePlatform } from '../context/PlatformContext'
-import { ACHIEVEMENTS, MODULES_BY_CATEGORY } from '../data/catalog'
+import { COURSE_LESSONS, COURSE_TOPICS, TOTAL_LESSONS, getCourseProgress, lessonPath } from '../data/course'
 import { resolveAvatarSrc } from '../data/avatarPresets'
-import { LEARN_WORLDS, MAX_PINNED_ACHIEVEMENTS, STAT_OPTIONS } from '../data/profileCustomizationOptions'
+import { LEARN_WORLDS } from '../data/profileCustomizationOptions'
 import { NOTE_STYLES, Rosette } from '../components/note/NoteKit'
 import { ProfileStudio, STUDIO_TAB_IDS } from '../components/profile/ProfileStudio'
 import type { StudioTabId } from '../components/profile/ProfileStudio'
-import { CountUp, LevelJourney, PROFILE_STYLES, StreakCalendar } from '../components/profile/ProfileVisuals'
+import { PROFILE_STYLES } from '../components/profile/ProfileVisuals'
 import { CardHero, CredentialHero, LAYOUT_STYLES, OfficeHero, getFolio } from '../components/profile/ProfileLayouts'
-import type { AchievementItem, HeroProps } from '../components/profile/ProfileLayouts'
+import type { HeroProps } from '../components/profile/ProfileLayouts'
 import { exportProfileCard } from '../components/profile/profileCard'
 import { useProfileCustomization } from '../services/profileCustomizationService'
-import type { StatId } from '../types/profileCustomization'
 
-const STAT_TONES: Record<StatId, string> = {
-  level: 'var(--ink-2)',
-  coins: '#d99a1e',
-  streak: 'var(--ink-3)',
-  achievements: 'var(--ink)',
-  topics: 'var(--ink)',
-}
-
-const PAGE_STYLES = `
-.pp-stamp-in{animation:pp-stamp .55s cubic-bezier(.23,1,.32,1) both}
-@keyframes pp-stamp{0%{opacity:0;transform:scale(1.5) rotate(var(--r,0deg))}60%{opacity:1;transform:scale(.94) rotate(var(--r,0deg))}100%{transform:scale(1) rotate(var(--r,0deg))}}
-.pp-cal .aspect-square{aspect-ratio:1.45}
-@media (prefers-reduced-motion:reduce){.pp-stamp-in{animation:none}}
-`
 
 const SectionHead: React.FC<{ kicker: string; title: string; action?: React.ReactNode }> = ({ kicker, title, action }) => (
   <div className="mb-4 flex items-end justify-between gap-3">
@@ -50,7 +35,7 @@ const GuestProfile: React.FC = () => (
         </span>
         <h1 className="note-display mt-6 text-[40px] font-black leading-[0.95] text-[var(--text)]">Tu credencial te espera</h1>
         <p className="mx-auto mt-4 max-w-md text-[16px] leading-relaxed text-[var(--text-muted)]">
-          Crea tu cuenta para tener un perfil propio, ganar sellos, juntar monedas Kor y desbloquear temas, barras y mundos.
+          Crea tu cuenta para tener un perfil propio, guardar tu avance en el curso y personalizar temas, barras y mundos.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <Link to="/register" className="note-btn note-btn-ink">
@@ -68,7 +53,7 @@ const GuestProfile: React.FC = () => (
 
 export const ProfilePage: React.FC = () => {
   const { user, isGuest, showToast } = usePlatform()
-  const [custom, update] = useProfileCustomization(user.username)
+  const [custom] = useProfileCustomization(user.username)
   const [searchParams, setSearchParams] = useSearchParams()
   const [isExporting, setIsExporting] = useState(false)
 
@@ -89,23 +74,14 @@ export const ProfilePage: React.FC = () => {
   const displayName = user.name || user.username
   const avatarSrc = resolveAvatarSrc(user.avatar, user.username)
   const initials = (displayName || 'U').slice(0, 2).toUpperCase()
-  const allAchievements = ACHIEVEMENTS as unknown as AchievementItem[]
-  const unlocked = allAchievements.filter((item) => user.achievements.includes(item.id))
-  const pinned = custom.pinnedAchievements.map((id) => unlocked.find((item) => item.id === id)).filter((item): item is AchievementItem => Boolean(item))
-  const xpPercent = user.xpToNext > 0 ? Math.min(100, Math.round((user.xp / user.xpToNext) * 100)) : 0
-  const lessonsTotal = (MODULES_BY_CATEGORY.trading || []).length || 8
-  const lessonsDone = Math.min(lessonsTotal, (user.moduleProgress?.trading || []).length)
+  const course = getCourseProgress(user.moduleProgress)
+  const lessonsTotal = TOTAL_LESSONS
+  const lessonsDone = course.done
+  const topicMarks = course.topicStats.map(({ topic, done, total }) => ({ number: topic.number, label: topic.shortTitle, icon: topic.icon, done, total }))
+  const currentTopicLabel = course.isDone ? 'Curso completado' : `Tema ${course.currentTopic.number} · ${course.currentTopic.shortTitle}`
+  const recent = COURSE_LESSONS.filter((lesson) => course.completed.has(lesson.index)).slice(-3).reverse()
   const world = LEARN_WORLDS.find((item) => item.id === custom.learnWorld) || LEARN_WORLDS[0]
   const gap = custom.density === 'compact' ? 'space-y-5' : 'space-y-8'
-
-  const togglePin = (id: string) => {
-    const has = custom.pinnedAchievements.includes(id)
-    if (!has && custom.pinnedAchievements.length >= MAX_PINNED_ACHIEVEMENTS) {
-      showToast(`Solo puedes destacar ${MAX_PINNED_ACHIEVEMENTS} sellos`, 'error')
-      return
-    }
-    update({ pinnedAchievements: has ? custom.pinnedAchievements.filter((item) => item !== id) : [...custom.pinnedAchievements, id] })
-  }
 
   const handleExport = async () => {
     if (isExporting) return
@@ -114,12 +90,12 @@ export const ProfilePage: React.FC = () => {
       await exportProfileCard({
         displayName,
         username: user.username,
-        level: user.level,
-        levelLabel: user.levelLabel,
-        coins: user.coins,
-        streak: user.streak,
-        achievementsUnlocked: unlocked.length,
-        achievementsTotal: allAchievements.length,
+        lessonsDone,
+        lessonsTotal,
+        topicsDone: course.topicsDone,
+        topicsTotal: COURSE_TOPICS.length,
+        progress: course.percent,
+        currentTopicLabel,
         avatar: avatarSrc,
         shape: custom.avatarShape,
         initials,
@@ -175,9 +151,10 @@ export const ProfilePage: React.FC = () => {
     avatarSrc,
     initials,
     displayName,
-    xpPercent,
-    unlocked,
-    pinned,
+    progress: course.percent,
+    topics: topicMarks,
+    currentTopic: course.currentTopic.number,
+    currentTopicLabel,
     folio: getFolio(user.username),
     lessonsDone,
     lessonsTotal,
@@ -185,22 +162,11 @@ export const ProfilePage: React.FC = () => {
     actions,
   }
 
-  const statValues: Record<StatId, { value: number; suffix?: string; note: string }> = {
-    level: { value: user.level, note: `${Math.max(0, user.xpToNext - user.xp)} XP para el siguiente` },
-    coins: { value: user.coins, note: 'Úsalas en el estudio' },
-    streak: { value: user.streak, suffix: user.streak === 1 ? ' día' : ' días', note: user.streak > 0 ? 'Sigue así mañana' : 'Empieza hoy' },
-    achievements: { value: unlocked.length, suffix: `/${allAchievements.length}`, note: 'Sellos ganados' },
-    topics: { value: lessonsDone, suffix: `/${lessonsTotal}`, note: 'Lecciones completadas' },
-  }
-
-  const visibleStats = STAT_OPTIONS.filter((option) => custom.visibleStats.includes(option.id))
-
   return (
     <div className={`note-home mx-auto max-w-6xl py-2 transition-[padding] duration-300 sm:py-4 ${studioOpen ? 'lg:pr-[452px]' : ''}`}>
       <style>{NOTE_STYLES}</style>
       <style>{PROFILE_STYLES}</style>
       <style>{LAYOUT_STYLES}</style>
-      <style>{PAGE_STYLES}</style>
 
       <div className={gap}>
         <div key={custom.profileLayout} className="note-enter">
@@ -209,92 +175,44 @@ export const ProfilePage: React.FC = () => {
           {custom.profileLayout === 'credential' && <CredentialHero {...heroProps} />}
         </div>
 
-        <section>
-          <SectionHead
-            kicker="ESTADO DE CUENTA"
-            title="Tus números"
-            action={
-              <button type="button" onClick={() => openStudio('diseno')} className="text-[14px] font-semibold text-[var(--ink)] hover:underline">
-                Elegir cuáles
-              </button>
-            }
-          />
-          <div className={`note-card grid overflow-hidden ${visibleStats.length >= 4 ? 'grid-cols-2 lg:grid-cols-4' : visibleStats.length === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2'}`}>
-            {visibleStats.map((option, index) => {
-              const stat = statValues[option.id]
-              const tone = STAT_TONES[option.id]
-              return (
-                <div key={option.id} className={`relative p-5 sm:p-6 ${index > 0 ? 'border-l border-dashed border-[var(--rule)]' : ''}`}>
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg text-[13px]" style={{ background: `color-mix(in srgb, ${tone} 14%, transparent)`, color: tone }}>
-                      <i className={`${option.icon} ${option.id === 'streak' && user.streak > 0 ? 'pf-flame' : ''}`}></i>
-                    </span>
-                    <span className="note-wide text-[10px] font-bold text-[var(--text-muted)]">{option.label.toUpperCase()}</span>
-                  </div>
-                  <div className="note-display note-num mt-3 text-[40px] font-black leading-none text-[var(--text)]">
-                    <CountUp value={stat.value} />
-                    {stat.suffix && <span className="text-[18px] font-bold text-[var(--text-muted)]">{stat.suffix}</span>}
-                  </div>
-                  <div className="mt-1.5 text-[13px] text-[var(--text-muted)]">{stat.note}</div>
-                </div>
-              )
-            })}
-          </div>
-        </section>
-
         <div className="grid gap-6 lg:grid-cols-[1.45fr_1fr]">
           <section>
             <SectionHead
-              kicker="LIBRETA DE SELLOS"
-              title={`${unlocked.length} de ${allAchievements.length} sellos`}
-              action={<span className="text-[13px] text-[var(--text-muted)]">Toca un sello para destacarlo</span>}
+              kicker="TU CURSO"
+              title={`${course.topicsDone} de ${COURSE_TOPICS.length} temas terminados`}
+              action={<span className="note-num text-[14px] font-semibold text-[var(--ink)]">{course.percent}%</span>}
             />
-            <div className="note-card relative overflow-hidden p-5 sm:p-6">
-              <div className="pointer-events-none absolute inset-0 opacity-50" style={{ background: 'repeating-linear-gradient(0deg, transparent 0 31px, var(--rule) 31px 32px)' }}></div>
-              <div className="relative grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-4">
-                {allAchievements.map((item, index) => {
-                  const isUnlocked = user.achievements.includes(item.id)
-                  const isPinned = custom.pinnedAchievements.includes(item.id)
-                  const rotation = ((index * 37) % 17) - 8
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      disabled={!isUnlocked}
-                      onClick={() => togglePin(item.id)}
-                      title={item.desc || item.name}
-                      aria-pressed={isPinned}
-                      aria-label={`${item.name}. ${isUnlocked ? (isPinned ? 'Destacado' : 'Desbloqueado') : 'Bloqueado'}`}
-                      className="group flex flex-col items-center gap-2 text-center disabled:cursor-default"
+            <div className="note-card divide-y divide-[var(--rule)] overflow-hidden">
+              {course.topicStats.map(({ topic, done, total }, topicIndex) => {
+                const isCurrent = !course.isDone && topicIndex === course.next.topicIndex
+                const isComplete = done === total
+                return (
+                  <div key={topic.number} className={`flex items-center gap-4 p-4 sm:px-5 ${isCurrent ? 'bg-[color-mix(in_srgb,var(--ink)_6%,transparent)]' : ''}`}>
+                    <span
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[15px] ${
+                        isComplete || isCurrent ? 'bg-[var(--ink)] text-[var(--bg)]' : 'bg-[var(--paper-2)] text-[var(--ink)]'
+                      }`}
                     >
-                      <span
-                        className={`pl-stamp relative flex h-20 w-20 items-center justify-center rounded-full ${isUnlocked ? 'pp-stamp-in' : ''}`}
-                        style={
-                          isUnlocked
-                            ? ({
-                                '--r': `${rotation}deg`,
-                                transform: `rotate(${rotation}deg)`,
-                                border: '3px double var(--ink-3)',
-                                color: 'var(--ink-3)',
-                                background: 'color-mix(in srgb, var(--ink-3) 7%, var(--surface))',
-                                animationDelay: `${index * 60}ms`,
-                              } as React.CSSProperties)
-                            : { border: '2px dashed var(--rule)', color: 'var(--text-dim)' }
-                        }
-                      >
-                        {isUnlocked && <span className="absolute inset-1.5 rounded-full border border-dashed border-[color-mix(in_srgb,var(--ink-3)_45%,transparent)]"></span>}
-                        <i className={`${isUnlocked ? item.icon || 'fa-solid fa-medal' : 'fa-solid fa-lock'} text-[22px]`}></i>
-                        {isPinned && (
-                          <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--ink)] text-[10px] text-[var(--bg)]">
-                            <i className="fa-solid fa-thumbtack"></i>
-                          </span>
-                        )}
-                      </span>
-                      <span className={`text-[13px] font-semibold leading-tight ${isUnlocked ? 'text-[var(--text)]' : 'text-[var(--text-dim)]'}`}>{item.name}</span>
-                    </button>
-                  )
-                })}
-              </div>
+                      <i className={isComplete ? 'fa-solid fa-check' : topic.icon}></i>
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className="truncate text-[15px] font-semibold text-[var(--text)]">
+                          {topic.number}. {topic.shortTitle}
+                        </span>
+                        <span className="note-num shrink-0 text-[13px] text-[var(--text-muted)]">
+                          {done}/{total}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex gap-1">
+                        {Array.from({ length: total }).map((_, i) => (
+                          <span key={i} className={`h-1.5 flex-1 rounded-full ${i < done ? 'bg-[var(--ink)]' : 'bg-[var(--rule)]'}`}></span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </section>
 
@@ -307,19 +225,23 @@ export const ProfilePage: React.FC = () => {
                     <i className={world.icon}></i>
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[15px] font-semibold text-[var(--text)]">Trading y Finanzas</div>
-                    <div className="note-num text-[13px] text-[var(--text-muted)]">
-                      {lessonsDone} de {lessonsTotal} lecciones
-                    </div>
+                    <div className="text-[15px] font-semibold text-[var(--text)]">{course.isDone ? 'Curso completado' : `Siguiente: lección ${course.next.id}`}</div>
+                    <div className="text-[13px] leading-snug text-[var(--text-muted)]">{course.isDone ? `${lessonsDone} de ${lessonsTotal} lecciones` : course.next.title}</div>
                   </div>
                 </div>
-                <div className="flex gap-1.5 px-5">
-                  {Array.from({ length: lessonsTotal }).map((_, i) => (
-                    <span key={i} className={`h-2 flex-1 rounded-full ${i < lessonsDone ? 'bg-[var(--ink)]' : 'bg-[var(--rule)]'}`}></span>
-                  ))}
-                </div>
-                <div className="mt-5 flex border-t border-[var(--rule)]">
-                  <Link to="/aprender" className="flex flex-1 items-center justify-center gap-2 py-3.5 text-[14px] font-bold text-[var(--ink)] hover:bg-[var(--paper)]">
+                {recent.length > 0 && (
+                  <ul className="space-y-1.5 px-5 pb-1">
+                    {recent.map((lesson) => (
+                      <li key={lesson.id} className="flex items-center gap-2 text-[13px] text-[var(--text-muted)]">
+                        <i className="fa-solid fa-circle-check text-[11px] text-[var(--ink)]"></i>
+                        <span className="note-num font-semibold text-[var(--text)]">{lesson.id}</span>
+                        <span className="truncate">{lesson.title}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="mt-4 flex border-t border-[var(--rule)]">
+                  <Link to={course.isDone ? '/aprender' : lessonPath(course.resumeIndex)} className="flex flex-1 items-center justify-center gap-2 py-3.5 text-[14px] font-bold text-[var(--ink)] hover:bg-[var(--paper)]">
                     {lessonsDone >= lessonsTotal ? 'Repasar' : 'Continuar'}
                     <i className="fa-solid fa-arrow-right text-[12px]"></i>
                   </Link>
@@ -354,26 +276,6 @@ export const ProfilePage: React.FC = () => {
           </div>
         </div>
 
-        {(custom.showStreakCalendar || custom.showLevelJourney) && (
-          <div className={`grid gap-6 ${custom.showStreakCalendar && custom.showLevelJourney ? 'lg:grid-cols-2' : ''}`}>
-            {custom.showStreakCalendar && (
-              <section>
-                <SectionHead kicker="ASISTENCIA" title="Calendario de racha" action={<span className="note-num text-[14px] font-semibold text-[var(--ink-3)]">{user.streak} {user.streak === 1 ? 'día' : 'días'}</span>} />
-                <div className="pp-cal note-card p-5">
-                  <StreakCalendar streak={user.streak} />
-                </div>
-              </section>
-            )}
-            {custom.showLevelJourney && (
-              <section>
-                <SectionHead kicker="PROGRESIÓN" title="Ruta de niveles" />
-                <div className="note-card p-5">
-                  <LevelJourney level={user.level} xp={user.xp} xpToNext={user.xpToNext} />
-                </div>
-              </section>
-            )}
-          </div>
-        )}
       </div>
 
       <ProfileStudio open={studioOpen} tab={studioTab} onTabChange={changeTab} onClose={closeStudio} />

@@ -445,7 +445,7 @@ interface AvatarFrameProps {
   frameColor: string
   showLevelRing: boolean
   progress: number
-  level: number
+  level?: number
   size?: number
 }
 
@@ -563,12 +563,14 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
         {src ? <img src={src} alt={alt} className="w-full h-full object-cover" /> : initials}
       </div>
 
-      <div
-        className="absolute rounded-full bg-[var(--primary)] text-[var(--primary-text)] border-2 border-[var(--surface)] flex items-center justify-center text-xs font-bold shadow"
-        style={{ width: badgeSize, height: badgeSize, right: AVATAR_PAD - 6, bottom: AVATAR_PAD - 6 }}
-      >
-        {level}
-      </div>
+      {level !== undefined && (
+        <div
+          className="absolute rounded-full bg-[var(--primary)] text-[var(--primary-text)] border-2 border-[var(--surface)] flex items-center justify-center text-xs font-bold shadow"
+          style={{ width: badgeSize, height: badgeSize, right: AVATAR_PAD - 6, bottom: AVATAR_PAD - 6 }}
+        >
+          {level}
+        </div>
+      )}
     </div>
   )
 }
@@ -745,4 +747,4 @@ export const LevelJourney: React.FC<LevelJourneyProps> = ({ level, xp, xpToNext 
       )}
     </div>
   )
-}
+}
