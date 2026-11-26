@@ -4,7 +4,7 @@ export interface AvatarPreset {
   url: string
 }
 
-type HairStyle = 'short' | 'long' | 'bun' | 'curly' | 'cap' | 'none'
+type HairStyle = 'short' | 'long' | 'bun' | 'curly' | 'cap' | 'buzz' | 'none'
 
 type Accessory = 'none' | 'glasses' | 'headphones'
 
@@ -23,19 +23,25 @@ interface HumanConfig {
 const wrapSvg = (inner: string, bgA: string, bgB: string) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${bgA}"/><stop offset="1" stop-color="${bgB}"/></linearGradient></defs><rect width="128" height="128" fill="url(#bg)"/>${inner}</svg>`
 
-const FRINGE = 'M38 56 C36 30 92 30 90 56 C86 46 76 42 64 42 C52 42 42 46 38 56 Z'
+const SHORT_HAIR = 'M37 62 C33 36 44 19 64 19 C84 19 95 34 91 60 C89 52 86 47 82 44 C75 49 61 50 50 44 C46 49 41 54 37 62 Z'
+
+const LONG_FRINGE = 'M37 66 C32 34 46 19 64 19 C82 19 96 34 91 66 C88 53 82 45 74 41 C68 46 57 48 47 44 C43 50 39 57 37 66 Z'
+
+const BUZZ_HAIR = 'M39 54 C37 30 50 23 64 23 C78 23 91 30 89 54 C86 44 78 38 64 38 C50 38 42 44 39 54 Z'
 
 const buildHuman = (config: HumanConfig) => {
   const { skin, skinShade, hair, shirt, style, accessory, bgA, bgB, capColor } = config
 
   const backHair =
     style === 'long'
-      ? `<path d="M34 64 C30 28 98 28 94 64 L96 106 L32 106 Z" fill="${hair}"/>`
+      ? `<path d="M33 66 C27 22 101 22 95 66 L99 110 L29 110 Z" fill="${hair}"/>`
       : ''
 
   const frontHair = (() => {
-    if (style === 'short' || style === 'long') return `<path d="${FRINGE}" fill="${hair}"/>`
-    if (style === 'bun') return `<path d="${FRINGE}" fill="${hair}"/><circle cx="64" cy="26" r="11" fill="${hair}"/>`
+    if (style === 'short') return `<path d="${SHORT_HAIR}" fill="${hair}"/>`
+    if (style === 'long') return `<path d="${LONG_FRINGE}" fill="${hair}"/>`
+    if (style === 'buzz') return `<path d="${BUZZ_HAIR}" fill="${hair}"/>`
+    if (style === 'bun') return `<circle cx="64" cy="16" r="11" fill="${hair}"/><path d="${SHORT_HAIR}" fill="${hair}"/>`
     if (style === 'curly') {
       const circles = [
         [42, 44, 12],
@@ -43,12 +49,14 @@ const buildHuman = (config: HumanConfig) => {
         [66, 34, 13],
         [78, 38, 13],
         [88, 48, 11],
+        [40, 56, 8],
+        [88, 58, 8],
       ]
       return circles.map(([cx, cy, r]) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${hair}"/>`).join('')
     }
     if (style === 'cap') {
       const cap = capColor || hair
-      return `<path d="M36 54 C36 26 92 26 92 54 Z" fill="${cap}"/><path d="M32 52 H100 C100 60 90 60 84 57 H32 Z" fill="${cap}" opacity="0.85"/>`
+      return `<path d="M36 46 H48 V60 C46 66 43 71 40 72 C37 66 36 58 36 50 Z" fill="${hair}"/><path d="M92 46 H80 V60 C82 66 85 71 88 72 C91 66 92 58 92 50 Z" fill="${hair}"/><path d="M35 54 C35 21 93 21 93 54 Z" fill="${cap}"/><path d="M32 52 H100 C100 60 90 60 84 57 H32 Z" fill="${cap}" opacity="0.85"/>`
     }
     return ''
   })()
@@ -57,7 +65,7 @@ const buildHuman = (config: HumanConfig) => {
     accessory === 'glasses'
       ? '<g fill="none" stroke="#111827" stroke-width="2.4"><circle cx="54" cy="60" r="8"/><circle cx="74" cy="60" r="8"/><path d="M62 60 H66"/></g>'
       : accessory === 'headphones'
-        ? '<path d="M36 58 C36 24 92 24 92 58" fill="none" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/><rect x="29" y="54" width="11" height="19" rx="5.5" fill="#0f172a"/><rect x="88" y="54" width="11" height="19" rx="5.5" fill="#0f172a"/><circle cx="34.5" cy="63" r="2" fill="#38bdf8"/><circle cx="93.5" cy="63" r="2" fill="#38bdf8"/>'
+        ? '<path d="M35 58 C35 14 93 14 93 58" fill="none" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/><rect x="29" y="54" width="11" height="19" rx="5.5" fill="#0f172a"/><rect x="88" y="54" width="11" height="19" rx="5.5" fill="#0f172a"/><circle cx="34.5" cy="63" r="2" fill="#38bdf8"/><circle cx="93.5" cy="63" r="2" fill="#38bdf8"/>'
         : ''
 
   const inner = `${backHair}<path d="M14 128 C14 98 38 88 64 88 C90 88 114 98 114 128 Z" fill="${shirt}"/><rect x="55" y="74" width="18" height="20" rx="7" fill="${skinShade}"/><ellipse cx="64" cy="58" rx="25" ry="28" fill="${skin}"/>${frontHair}<circle cx="54" cy="61" r="2.8" fill="#1f2937"/><circle cx="74" cy="61" r="2.8" fill="#1f2937"/><path d="M56 71 Q64 78 72 71" fill="none" stroke="#1f2937" stroke-width="2.6" stroke-linecap="round"/><circle cx="47" cy="68" r="4" fill="#f87171" opacity="0.28"/><circle cx="81" cy="68" r="4" fill="#f87171" opacity="0.28"/>${accessories}`
@@ -120,7 +128,7 @@ const RAW_PRESETS: { id: string; name: string; svg: string }[] = [
   {
     id: 'max',
     name: 'Max',
-    svg: buildHuman({ skin: '#8d5524', skinShade: '#70431c', hair: '#111827', shirt: '#ef4444', style: 'none', accessory: 'headphones', bgA: '#fecaca', bgB: '#ef4444' }),
+    svg: buildHuman({ skin: '#8d5524', skinShade: '#70431c', hair: '#3b2417', shirt: '#ef4444', style: 'buzz', accessory: 'headphones', bgA: '#fecaca', bgB: '#ef4444' }),
   },
   { id: 'kor', name: 'Kor', svg: buildRobot() },
   { id: 'mishi', name: 'Mishi', svg: buildCat() },
@@ -137,5 +145,20 @@ export const getDefaultAvatarPreset = (username: string): AvatarPreset => {
   return AVATAR_PRESETS[seed % AVATAR_PRESETS.length]
 }
 
+const backgroundKey = (svg: string) => (svg.match(/stop-color="(#[0-9a-fA-F]{3,8})"/g) || []).join('|')
+
+const PRESET_BY_BACKGROUND = new Map(RAW_PRESETS.map((preset, index) => [backgroundKey(preset.svg), AVATAR_PRESETS[index]]))
+
+export const normalizeAvatar = (avatar: string | null | undefined): string | null => {
+  if (!avatar) return null
+  if (!avatar.startsWith('data:image/svg+xml') || AVATAR_PRESETS.some((preset) => preset.url === avatar)) return avatar
+  try {
+    const svg = decodeURIComponent(avatar.slice(avatar.indexOf(',') + 1))
+    return PRESET_BY_BACKGROUND.get(backgroundKey(svg))?.url || avatar
+  } catch {
+    return avatar
+  }
+}
+
 export const resolveAvatarSrc = (avatar: string | null | undefined, username: string): string =>
-  avatar || getDefaultAvatarPreset(username).url
+  normalizeAvatar(avatar) || getDefaultAvatarPreset(username).url

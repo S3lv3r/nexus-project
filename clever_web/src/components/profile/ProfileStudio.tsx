@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { usePlatform } from '../../context/PlatformContext'
-import { AVATAR_PRESETS } from '../../data/avatarPresets'
+import { AVATAR_PRESETS, normalizeAvatar } from '../../data/avatarPresets'
 import {
   AVATAR_SHAPES,
   BANNER_PRESETS,
@@ -806,7 +806,7 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ open, tab, onTabCh
                       title={preset.name}
                       aria-label={`Avatar ${preset.name}`}
                       onClick={() => updateUserProfile({ avatar: preset.url })}
-                      className={`aspect-square overflow-hidden rounded-xl border-2 transition-transform hover:scale-105 ${user.avatar === preset.url ? 'border-[var(--ink)]' : 'border-transparent'}`}
+                      className={`aspect-square overflow-hidden rounded-xl border-2 transition-transform hover:scale-105 ${normalizeAvatar(user.avatar) === preset.url ? 'border-[var(--ink)]' : 'border-transparent'}`}
                     >
                       <img src={preset.url} alt="" className="h-full w-full object-cover" />
                     </button>
