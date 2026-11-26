@@ -1,44 +1,34 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { usePlatform } from '../context/PlatformContext'
-import { MODULES_BY_CATEGORY } from '../data/catalog'
+import { COURSE_ID, COURSE_LESSONS, COURSE_NAME, COURSE_TOPICS, TOTAL_LESSONS, getCourseProgress } from '../data/course'
 import { GuestSignupGate } from '../components/GuestSignupGate'
 import { TradingTrailMap, type TrailLessonStatus, type TrailScene } from '../components/learn/TradingTrailMap'
+import { LessonView } from '../components/learn/LessonView'
 import { useProfileCustomization } from '../services/profileCustomizationService'
 import { Microtext, NOTE_STYLES, ROSETTE_SMALL, Rosette, SmallRosette } from '../components/note/NoteKit'
 
-const COURSE_ID = 'trading'
-const COURSE_NAME = 'Trading y Finanzas'
-const LESSONS_PER_STAGE = 4
-const TRADING_MODULES: string[] = MODULES_BY_CATEGORY.trading
+const STAGES = COURSE_TOPICS.map((topic) => ({ title: topic.shortTitle, objective: topic.summary }))
 
-const STAGES = [
-  {
-    title: 'Leer el mercado',
-    objective: 'Entiende cómo funciona un mercado, lee velas japonesas, reconoce soportes y tendencias y aprende a cuidar tu riesgo.',
-  },
-  {
-    title: 'Operar con disciplina',
-    objective: 'Controla tus emociones, usa órdenes y estrategias, practica en el simulador y pon a prueba tus ideas con datos históricos.',
-  },
-]
-
-const LESSON_SCENES: TrailScene[] = ['company', 'candles', 'range', 'stoploss', 'emotions', 'orders', 'simulator', 'backtest']
+const LESSON_SCENES: Record<string, TrailScene> = {
+  '1.1': 'company',
+  '1.2': 'orders',
+  '2.1': 'candles',
+  '2.2': 'range',
+  '3.3': 'simulator',
+  '5.1': 'stoploss',
+  '5.3': 'emotions',
+  '5.5': 'backtest',
+}
 
 const WORLD_PHRASES: Record<string, string> = { city: 'la ciudad', candles: 'el Valle de las velas', island: 'la Isla del tesoro' }
 
-const LESSONS = TRADING_MODULES.map((title, index) => ({
-  title,
-  stageIndex: Math.floor(index / LESSONS_PER_STAGE),
-  scene: LESSON_SCENES[index % LESSON_SCENES.length],
+const LESSONS = COURSE_LESSONS.map((lesson) => ({
+  title: lesson.title,
+  stageIndex: lesson.topicIndex,
+  scene: LESSON_SCENES[lesson.id],
+  code: lesson.id,
 }))
-
-const LESSON_COPY = {
-  idea: 'Este concepto te ayuda a interpretar los movimientos del mercado y tomar decisiones con un plan.',
-  simple: 'Imagina que {term} es una pieza de un mapa que te ayuda a orientarte antes de dar el siguiente paso.',
-  example: 'Al revisar una gráfica de precios, puedes reconocer {term} y explicar qué información aporta.',
-  practice: 'Mira una gráfica sencilla e intenta encontrar un ejemplo de {term}. ¿Qué observas?',
-}
 
 const QUESTIONS = [
   { title: '¿Qué es una stablecoin?', answers: ['Una criptomoneda diseñada para mantener un valor estable', 'Una moneda que siempre sube', 'Una acción de una empresa'] },
@@ -53,33 +43,7 @@ const STYLES = [
   { icon: 'fa-solid fa-forward', title: 'Ya tengo experiencia', text: 'Avanza y repasa solo lo que necesitas.' },
 ]
 
-const RESOURCES = [
-  {
-    icon: 'fa-solid fa-magnifying-glass-chart',
-    name: 'Análisis de mercado',
-    threshold: 4,
-    prompt: 'Elige un ejemplo y describe cómo se relaciona con los conceptos de las primeras lecciones.',
-    link: { to: '/analisis', label: 'Abrir análisis' },
-  },
-  {
-    icon: 'fa-solid fa-clipboard-list',
-    name: 'Plan de operación',
-    threshold: 8,
-    prompt: 'Analiza un caso: identifica sus elementos, explica sus relaciones y justifica tus conclusiones.',
-    link: { to: '/analisis', label: 'Abrir análisis' },
-  },
-  {
-    icon: 'fa-solid fa-flask',
-    name: 'Simulador',
-    threshold: 8,
-    prompt: 'Crea una propuesta usando lo aprendido. Explica sus pasos y cómo comprobarías el resultado.',
-    link: { to: '/exchange', label: 'Abrir simulador' },
-  },
-]
-
 const SURVEY_NEXT_STEPS = ['Repasarlo', 'Aplicarlo en un ejemplo', 'Continuar con el siguiente tema']
-const CANDLE_HEIGHTS = [42, 65, 52, 75, 56, 82, 62, 91, 68, 78, 54, 70]
-const FALLING_CANDLES = new Set([2, 6, 10])
 
 type View = 'path' | 'style' | 'diagnostic' | 'result' | 'lesson'
 type LessonStatus = TrailLessonStatus
@@ -135,55 +99,53 @@ const FlowShell: React.FC<{ onBack: () => void; children: React.ReactNode }> = (
   </div>
 )
 
-const RewardModal: React.FC<{ reward: { title: string; bonus: number; coins: number }; onClose: () => void }> = ({ reward, onClose }) => (
-  <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(5,10,20,0.55)] p-4 backdrop-blur-[3px]" role="presentation" onClick={onClose}>
-    <section
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="learn-reward-title"
-      onClick={(event) => event.stopPropagation()}
-      className="note-paper relative isolate w-full max-w-md overflow-hidden rounded-[28px] bg-[var(--bg-alt)] p-8 text-center"
-    >
-      <Rosette className="pointer-events-none absolute left-1/2 top-0 -z-10 h-80 w-80 -translate-x-1/2 -translate-y-1/3 opacity-70" />
-      <button type="button" onClick={onClose} aria-label="Cerrar recompensa" className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-muted)] hover:bg-[var(--paper-2)]">
-        <i className="fa-solid fa-xmark"></i>
-      </button>
-      <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--ink)] text-2xl text-[var(--bg)]">
-        <i className="fa-solid fa-award"></i>
-      </span>
-      <h2 id="learn-reward-title" className="note-display mt-5 text-3xl font-black text-[var(--text)]">Etapa completada</h2>
-      <p className="mt-2 text-base leading-relaxed text-[var(--text-muted)]">Terminaste "{reward.title}". Tu constancia merece una recompensa.</p>
-      <div className="note-display note-num mt-5 inline-flex items-center gap-3 rounded-full border-[1.5px] border-[var(--ink)] px-5 py-2 text-lg font-extrabold text-[var(--ink)]">
-        +{reward.bonus} XP &middot; +{reward.coins} monedas
-      </div>
-      <div className="mt-7">
-        <button type="button" onClick={onClose} className="note-btn note-btn-ink w-full">
-          Seguir aprendiendo
-          <i className="fa-solid fa-arrow-right text-sm"></i>
+const TopicDoneModal: React.FC<{ topicIndex: number; onClose: () => void }> = ({ topicIndex, onClose }) => {
+  const topic = COURSE_TOPICS[topicIndex]
+  const nextTopic = COURSE_TOPICS[topicIndex + 1]
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(5,10,20,0.55)] p-4 backdrop-blur-[3px]" role="presentation" onClick={onClose}>
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="learn-topic-title"
+        onClick={(event) => event.stopPropagation()}
+        className="note-paper relative isolate w-full max-w-md overflow-hidden rounded-[28px] bg-[var(--bg-alt)] p-8 text-center"
+      >
+        <Rosette className="pointer-events-none absolute left-1/2 top-0 -z-10 h-80 w-80 -translate-x-1/2 -translate-y-1/3 opacity-70" />
+        <button type="button" onClick={onClose} aria-label="Cerrar" className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-muted)] hover:bg-[var(--paper-2)]">
+          <i className="fa-solid fa-xmark"></i>
         </button>
-      </div>
-    </section>
-  </div>
-)
+        <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--ink)] text-2xl text-[var(--bg)]">
+          <i className="fa-solid fa-award"></i>
+        </span>
+        <div className="note-wide mt-5 text-xs font-extrabold text-[var(--ink)]">TEMA {topic.number} TERMINADO</div>
+        <h2 id="learn-topic-title" className="note-display mt-2 text-3xl font-black leading-tight text-[var(--text)]">{topic.shortTitle}</h2>
+        <p className="mt-3 text-base leading-relaxed text-[var(--text-muted)]">
+          {nextTopic ? `Completaste las ${topic.lessons.length} lecciones de este tema. Lo que sigue: ${nextTopic.title}.` : 'Terminaste todos los temas del curso. Puedes repasar cualquier lección cuando quieras.'}
+        </p>
+        <div className="mt-7">
+          <button type="button" onClick={onClose} className="note-btn note-btn-ink w-full">
+            {nextTopic ? 'Seguir con el siguiente tema' : 'Volver al camino'}
+            <i className="fa-solid fa-arrow-right text-sm"></i>
+          </button>
+        </div>
+      </section>
+    </div>
+  )
+}
 
 export const LearnPage: React.FC = () => {
-  const { user, isGuest, completeModule, addXP, addCoins, logActivity, showToast, updateUserProfile } = usePlatform()
-  const [customization, updateCustomization] = useProfileCustomization(user.username)
-  const [previewEnd, setPreviewEnd] = useState(false)
-  const isAdminView = !isGuest && customization.adminMode
-  const showEnd = isAdminView && previewEnd
+  const { user, isGuest, completeModule, logActivity, showToast, updateUserProfile } = usePlatform()
+  const [customization] = useProfileCustomization(user.username)
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [isGuestGateOpen, setIsGuestGateOpen] = useState(isGuest)
   const [learningStyle, setLearningStyle] = useState(user.learningStyle || '')
   const [question, setQuestion] = useState(0)
   const [answers, setAnswers] = useState<number[]>([])
-  const [showEasy, setShowEasy] = useState(false)
-  const [unitReward, setUnitReward] = useState<{ title: string; bonus: number; coins: number } | null>(null)
+  const [finishedTopic, setFinishedTopic] = useState<number | null>(null)
   const [surveyClarity, setSurveyClarity] = useState<number | null>(null)
   const [surveyNextStep, setSurveyNextStep] = useState('')
-  const [activeResource, setActiveResource] = useState<number | null>(null)
-  const [notes, setNotes] = useState<Record<number, string>>({})
 
   const requestedView = searchParams.get('view')
   const requestedLesson = Number.parseInt(searchParams.get('nivel') || '1', 10)
@@ -209,22 +171,17 @@ export const LearnPage: React.FC = () => {
 
   useEffect(() => {
     if (view !== 'lesson') return
-    setShowEasy(false)
     const savedSurvey = user.lessonSurveys?.[COURSE_ID]?.[lesson]
     setSurveyClarity(savedSurvey?.clarity ?? null)
     setSurveyNextStep(savedSurvey?.nextStep ?? '')
   }, [view, lesson])
 
-  const completed = (user.moduleProgress[COURSE_ID] || []).filter((index) => Number.isInteger(index) && index >= 0 && index < LESSONS.length)
-  const completedSet = new Set(completed)
-  const totalLessons = LESSONS.length
-  const progress = Math.round((completedSet.size / totalLessons) * 100)
-  const firstIncomplete = LESSONS.findIndex((_, index) => !completedSet.has(index))
-  const resumeIndex = firstIncomplete < 0 ? totalLessons - 1 : firstIncomplete
-  const isCourseDone = firstIncomplete < 0
-  const completedStages = STAGES.filter((_, stageIndex) =>
-    LESSONS.every((item, index) => item.stageIndex !== stageIndex || completedSet.has(index)),
-  ).length
+  const course = getCourseProgress(user.moduleProgress)
+  const completedSet = course.completed
+  const totalLessons = TOTAL_LESSONS
+  const progress = course.percent
+  const resumeIndex = course.resumeIndex
+  const isCourseDone = course.isDone
 
   const statusOf = (index: number): LessonStatus => {
     if (completedSet.has(index)) return 'completed'
@@ -250,17 +207,10 @@ export const LearnPage: React.FC = () => {
       return
     }
     completeModule(COURSE_ID, lesson)
-    logActivity(`Lección completada: ${TRADING_MODULES[lesson]}`)
-    const stageIndex = Math.floor(lesson / LESSONS_PER_STAGE)
-    const stageStart = stageIndex * LESSONS_PER_STAGE
-    const stageCompleted = Array.from({ length: LESSONS_PER_STAGE }, (_, offset) => stageStart + offset)
-      .filter((index) => index < totalLessons)
-      .every((index) => finished.includes(index) || index === lesson)
-    if (stageCompleted) {
-      addXP(100)
-      addCoins(50)
-      setUnitReward({ title: STAGES[stageIndex]?.title || `Etapa ${stageIndex + 1}`, bonus: 100, coins: 50 })
-    }
+    logActivity(`Lección completada: ${COURSE_LESSONS[lesson].id} ${COURSE_LESSONS[lesson].title}`)
+    const topicIndex = COURSE_LESSONS[lesson].topicIndex
+    const stageCompleted = COURSE_LESSONS.filter((item) => item.topicIndex === topicIndex).every((item) => finished.includes(item.index) || item.index === lesson)
+    if (stageCompleted) setFinishedTopic(topicIndex)
     if (stageCompleted || lesson >= totalLessons - 1) {
       openPath(true)
       return
@@ -270,7 +220,7 @@ export const LearnPage: React.FC = () => {
 
   function submitLessonSurvey() {
     if (surveyClarity === null || !surveyNextStep) {
-      showToast('Responde las dos preguntas para completar la lección y recibir tu recompensa.', 'info')
+      showToast('Responde las dos preguntas para completar la lección.', 'info')
       return
     }
     const surveys = user.lessonSurveys || {}
@@ -427,7 +377,7 @@ export const LearnPage: React.FC = () => {
         <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-2xl border-[1.5px] border-[var(--ink)] bg-[var(--surface)] p-5">
           <div>
             <span className="note-num text-sm text-[var(--text-muted)]">
-              Lección {pad(recommended + 1)} &middot; Etapa {pad(LESSONS[recommended].stageIndex + 1)}
+              Lección {COURSE_LESSONS[recommended].id} &middot; Tema {COURSE_LESSONS[recommended].topicNumber}
             </span>
             <strong className="note-display mt-1 block text-xl font-extrabold text-[var(--text)]">{LESSONS[recommended].title}</strong>
           </div>
@@ -446,211 +396,89 @@ export const LearnPage: React.FC = () => {
   }
 
   if (view === 'lesson') {
-    const title = LESSONS[lesson]?.title || LESSONS[0].title
-    const stageIndex = LESSONS[lesson]?.stageIndex ?? 0
-    const term = title.toLowerCase()
-    const isCandle = term.includes('vela')
-    const isSimpleStyle = user.learningStyle === STYLES[0].title
-    const isDetailedStyle = user.learningStyle === STYLES[1].title
-    const isPracticeStyle = user.learningStyle === STYLES[2].title
-    const technical = isCandle
-      ? 'Una vela japonesa representa cómo se movió el precio de un activo durante un periodo. Su cuerpo muestra la apertura y el cierre; las mechas señalan los precios máximo y mínimo.'
-      : `${title}: ${LESSON_COPY.idea}`
-    const simple = isCandle
-      ? 'Piensa en una vela como el resumen de una historia: te enseña dónde empezó y terminó el precio, y hasta dónde llegó en el camino.'
-      : LESSON_COPY.simple.replace('{term}', term)
-    const example = isCandle
-      ? 'Si una criptomoneda comenzó en $100 y terminó en $110, la vela muestra ese movimiento. Sus mechas señalan si llegó a subir o bajar más.'
-      : LESSON_COPY.example.replaceAll('{term}', term)
-    const practicePrompt = LESSON_COPY.practice.replace('{term}', term)
     const isLessonDone = completedSet.has(lesson)
-    const isStageClosing = (lesson + 1) % LESSONS_PER_STAGE === 0
+    const current = COURSE_LESSONS[lesson]
+    const isTopicClosing = COURSE_LESSONS[lesson + 1]?.topicIndex !== current.topicIndex
 
-    return (
-      <div className="note-home mx-auto max-w-6xl space-y-8 py-6">
-        <style>{NOTE_STYLES}</style>
-        <nav aria-label="Ruta" className="flex flex-wrap items-center gap-2 text-sm text-[var(--text-muted)]">
-          <button type="button" onClick={() => openPath()} className="font-semibold transition-colors hover:text-[var(--ink)]">
-            Aprender
-          </button>
-          <i className="fa-solid fa-chevron-right text-[10px] text-[var(--text-dim)]"></i>
-          <button type="button" onClick={() => openPath()} className="font-semibold transition-colors hover:text-[var(--ink)]">
-            {COURSE_NAME}
-          </button>
-          <i className="fa-solid fa-chevron-right text-[10px] text-[var(--text-dim)]"></i>
-          <span className="note-num">Lección {pad(lesson + 1)}</span>
-        </nav>
+    const survey = (
+      <section className="note-card p-6 sm:p-9">
+        <h2 className="note-display text-3xl font-black text-[var(--text)]">Antes de seguir, cuéntanos</h2>
+        <p className="mt-2 text-base text-[var(--text-muted)]">Tu respuesta guarda tu avance y nos ayuda a mejorar cada lección.</p>
 
-        <header className="note-bill note-paper relative isolate overflow-hidden rounded-[28px] p-7 sm:p-10">
-          <Rosette className="pointer-events-none absolute -right-32 -top-40 -z-10 h-[460px] w-[460px]" />
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="note-wide text-xs font-extrabold text-[var(--ink)]">ETAPA {pad(stageIndex + 1)} &middot; {STAGES[stageIndex]?.title.toUpperCase()}</span>
-            <span className="h-px w-8 bg-[var(--rule)]"></span>
-            <span className="note-num text-sm text-[var(--text-muted)]">
-              Lección {pad(lesson + 1)} de {pad(totalLessons)}
-            </span>
-          </div>
-          <h1 className="note-display mt-4 max-w-[20ch] text-4xl font-black leading-[1.02] text-[var(--text)] sm:text-[3.4rem]">{title}</h1>
-          <p className="mt-4 max-w-[60ch] text-lg leading-relaxed text-[var(--text-muted)]">{technical}</p>
-        </header>
-
-        <div className="grid gap-5 lg:grid-cols-[1.35fr_1fr]">
-          <div className="space-y-5">
-            <section className="note-card p-6 sm:p-7">
-              <h2 className="note-display text-xl font-extrabold text-[var(--text)]">{isDetailedStyle ? 'Concepto clave' : 'La idea principal'}</h2>
-              <p className="mt-3 text-base leading-relaxed text-[var(--text)]">{technical}</p>
-              {isDetailedStyle && (
-                <span className="mt-4 inline-flex items-center gap-2 rounded-full border border-[var(--rule)] px-3 py-1 text-sm text-[var(--ink)]">
-                  <i className="fa-solid fa-bookmark text-xs"></i>
-                  Término clave: {title}
-                </span>
-              )}
-            </section>
-
-            <section className="note-card p-6 sm:p-7">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="note-display text-xl font-extrabold text-[var(--text)]">{isSimpleStyle ? 'En palabras simples' : 'Una forma de entenderlo'}</h2>
-                <button type="button" onClick={() => setShowEasy((previous) => !previous)} className="note-btn note-btn-line !h-10 !px-4 !text-sm">
-                  {showEasy ? 'Ver explicación' : 'Explicarlo más fácil'}
+        <fieldset className="mt-7">
+          <legend className="note-display text-lg font-bold text-[var(--text)]">¿Qué tan clara fue esta lección?</legend>
+          <div className="mt-3 grid max-w-xl grid-cols-5 gap-2">
+            {[1, 2, 3, 4, 5].map((value) => {
+              const isSelected = surveyClarity === value
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => setSurveyClarity(value)}
+                  className={`flex flex-col items-center justify-center rounded-2xl border-[1.5px] py-3 transition-colors ${
+                    isSelected ? 'border-[var(--ink)] bg-[var(--ink)] text-[var(--bg)]' : 'border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:border-[color-mix(in_srgb,var(--ink)_45%,var(--border))]'
+                  }`}
+                >
+                  <span className="note-display note-num text-xl font-extrabold">{value}</span>
+                  <small className={`h-4 text-xs ${isSelected ? 'opacity-80' : 'text-[var(--text-muted)]'}`}>{value === 1 ? 'Poco' : value === 5 ? 'Mucho' : ''}</small>
                 </button>
-              </div>
-              <p className="mt-3 text-base leading-relaxed text-[var(--text)]">{showEasy || isSimpleStyle ? simple : technical}</p>
-            </section>
-
-            {isCandle && (
-              <section className="note-card p-6 sm:p-7">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h2 className="note-display text-xl font-extrabold text-[var(--text)]">{isPracticeStyle ? 'Prueba a leer este movimiento' : 'Así se ve un movimiento'}</h2>
-                  <small className="text-sm text-[var(--text-muted)]">Ilustración &middot; sin datos de mercado</small>
-                </div>
-                <svg viewBox="0 0 360 140" className="mt-5 h-40 w-full" role="img" aria-label="Ilustración de velas japonesas">
-                  {[35, 70, 105].map((y) => (
-                    <line key={y} x1="0" x2="360" y1={y} y2={y} stroke="var(--rule)" strokeWidth="0.8" />
-                  ))}
-                  {CANDLE_HEIGHTS.map((height, index) => {
-                    const isFalling = FALLING_CANDLES.has(index)
-                    const body = height * 0.55
-                    const x = 18 + index * 28
-                    const top = 128 - body - index * 1.5
-                    const wick = 10 + (index % 3) * 5
-                    const color = isFalling ? 'var(--ink-3)' : 'var(--ink)'
-                    return (
-                      <g key={index}>
-                        <line x1={x} x2={x} y1={top - wick} y2={top + body + wick / 2} stroke={color} strokeWidth="1.6" />
-                        <rect x={x - 7} y={top} width="14" height={body} rx="2" fill={color} fillOpacity={isFalling ? 0.75 : 0.85} />
-                      </g>
-                    )
-                  })}
-                </svg>
-                <div className="mt-3 flex justify-between text-sm text-[var(--text-muted)]">
-                  <span>Apertura</span>
-                  <span>Movimiento del precio</span>
-                  <span>Cierre</span>
-                </div>
-                {isPracticeStyle && <p className="mt-4 text-base font-medium text-[var(--ink)]">Observa el cuerpo y las mechas. ¿En qué dirección terminó el precio?</p>}
-              </section>
-            )}
-
-            {isPracticeStyle && !isCandle && (
-              <section className="note-card p-6 sm:p-7">
-                <h2 className="note-display flex items-center gap-2 text-xl font-extrabold text-[var(--text)]">
-                  <i className="fa-solid fa-pencil text-base text-[var(--ink)]"></i>
-                  Prueba rápida
-                </h2>
-                <p className="mt-3 text-base leading-relaxed text-[var(--text)]">{practicePrompt}</p>
-                <p className="mt-2 text-sm text-[var(--text-muted)]">Piensa tu respuesta antes de continuar.</p>
-              </section>
-            )}
+              )
+            })}
           </div>
+        </fieldset>
 
-          <div className="space-y-5">
-            <section className="note-paper relative isolate overflow-hidden rounded-[20px] p-6 sm:p-7">
-              <SmallRosette className="pointer-events-none absolute -bottom-12 -right-12 -z-10 h-40 w-40 opacity-50" />
-              <h2 className="note-display flex items-center gap-2 text-xl font-extrabold text-[var(--text)]">
-                <i className="fa-regular fa-lightbulb text-base text-[var(--ink)]"></i>
-                {isDetailedStyle ? 'Aplicación del concepto' : 'Ejemplo cotidiano'}
-              </h2>
-              <p className="mt-3 text-base leading-relaxed text-[var(--text)]">{example}</p>
-            </section>
-            <button type="button" onClick={openStyle} className="note-card note-link group flex w-full items-center gap-4 p-5 text-left">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--rule)] text-[var(--ink)]">
-                <i className="fa-solid fa-sliders"></i>
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm text-[var(--text-muted)]">Tu forma de aprender</span>
-                <span className="note-display block text-lg font-bold text-[var(--text)]">{user.learningStyle || 'Elegir estilo'}</span>
-              </span>
-              <i className="fa-solid fa-arrow-right text-sm text-[var(--text-dim)] transition-transform duration-300 group-hover:translate-x-1 group-hover:text-[var(--ink)]"></i>
+        <fieldset className="mt-7">
+          <legend className="note-display text-lg font-bold text-[var(--text)]">¿Qué harás con lo aprendido?</legend>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {SURVEY_NEXT_STEPS.map((choice) => {
+              const isSelected = surveyNextStep === choice
+              return (
+                <button
+                  key={choice}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => setSurveyNextStep(choice)}
+                  className={`rounded-full border-[1.5px] px-4 py-2 text-[15px] font-medium transition-colors ${
+                    isSelected ? 'border-[var(--ink)] bg-[var(--ink)] text-[var(--bg)]' : 'border-[var(--border)] text-[var(--text)] hover:border-[color-mix(in_srgb,var(--ink)_45%,var(--border))]'
+                  }`}
+                >
+                  {choice}
+                </button>
+              )
+            })}
+          </div>
+        </fieldset>
+
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--rule)] pt-6">
+          <span className="text-[15px] text-[var(--text-muted)]">
+            {isLessonDone ? 'Ya completaste esta lección. Puedes repasarla cuando quieras.' : isTopicClosing ? `Con esta lección terminas el Tema ${current.topicNumber}.` : `Siguiente: ${COURSE_LESSONS[lesson + 1]?.title}`}
+          </span>
+          {isLessonDone ? (
+            <button type="button" onClick={() => (lesson < totalLessons - 1 ? openLesson(lesson + 1) : openPath())} className="note-btn note-btn-ink">
+              {lesson < totalLessons - 1 ? 'Ir a la siguiente lección' : 'Volver al camino'}
+              <i className="fa-solid fa-arrow-right text-sm"></i>
             </button>
-          </div>
-        </div>
-
-        <section className="note-card p-6 sm:p-9">
-          <h2 className="note-display text-3xl font-black text-[var(--text)]">Antes de seguir, cuéntanos</h2>
-          <p className="mt-2 text-base text-[var(--text-muted)]">Tu respuesta guarda tu avance y activa tus recompensas.</p>
-
-          <fieldset className="mt-7">
-            <legend className="note-display text-lg font-bold text-[var(--text)]">¿Qué tan clara fue esta lección?</legend>
-            <div className="mt-3 grid max-w-xl grid-cols-5 gap-2">
-              {[1, 2, 3, 4, 5].map((value) => {
-                const isSelected = surveyClarity === value
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    aria-pressed={isSelected}
-                    onClick={() => setSurveyClarity(value)}
-                    className={`flex flex-col items-center justify-center rounded-2xl border-[1.5px] py-3 transition-colors ${
-                      isSelected ? 'border-[var(--ink)] bg-[var(--ink)] text-[var(--bg)]' : 'border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:border-[color-mix(in_srgb,var(--ink)_45%,var(--border))]'
-                    }`}
-                  >
-                    <span className="note-display note-num text-xl font-extrabold">{value}</span>
-                    <small className={`h-4 text-xs ${isSelected ? 'opacity-80' : 'text-[var(--text-muted)]'}`}>{value === 1 ? 'Poco' : value === 5 ? 'Mucho' : ''}</small>
-                  </button>
-                )
-              })}
-            </div>
-          </fieldset>
-
-          <fieldset className="mt-7">
-            <legend className="note-display text-lg font-bold text-[var(--text)]">¿Qué harás con lo aprendido?</legend>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {SURVEY_NEXT_STEPS.map((choice) => {
-                const isSelected = surveyNextStep === choice
-                return (
-                  <button
-                    key={choice}
-                    type="button"
-                    aria-pressed={isSelected}
-                    onClick={() => setSurveyNextStep(choice)}
-                    className={`rounded-full border-[1.5px] px-4 py-2 text-[15px] font-medium transition-colors ${
-                      isSelected ? 'border-[var(--ink)] bg-[var(--ink)] text-[var(--bg)]' : 'border-[var(--border)] text-[var(--text)] hover:border-[color-mix(in_srgb,var(--ink)_45%,var(--border))]'
-                    }`}
-                  >
-                    {choice}
-                  </button>
-                )
-              })}
-            </div>
-          </fieldset>
-
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--rule)] pt-6">
-            <span className="text-[15px] text-[var(--text-muted)]">
-              Recompensa: <strong className="note-num text-[var(--ink)]">+35 XP &middot; +15 monedas</strong>
-              {isStageClosing && <span className="block text-sm">Cierre de etapa: +100 XP &middot; +50 monedas</span>}
-            </span>
+          ) : (
             <button
               type="button"
               onClick={submitLessonSurvey}
-              disabled={isLessonDone || surveyClarity === null || !surveyNextStep}
+              disabled={surveyClarity === null || !surveyNextStep}
               className="note-btn note-btn-ink disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isLessonDone ? 'Lección completada' : 'Completar y continuar'}
-              {!isLessonDone && <i className="fa-solid fa-arrow-right text-sm"></i>}
+              Completar y continuar
+              <i className="fa-solid fa-arrow-right text-sm"></i>
             </button>
-          </div>
-        </section>
-      </div>
+          )}
+        </div>
+      </section>
+    )
+
+    return (
+      <>
+        <style>{NOTE_STYLES}</style>
+        <LessonView key={current.id} lesson={current} learningStyle={user.learningStyle} isDone={isLessonDone} onOpenPath={() => openPath()} onOpenStyle={openStyle} footer={survey} />
+      </>
     )
   }
 
@@ -669,12 +497,12 @@ export const LearnPage: React.FC = () => {
               <span className="note-wide text-sm font-extrabold text-[var(--ink)]">CLEVER</span>
               <span className="h-px w-10 bg-[var(--rule)]"></span>
               <span className="note-num text-sm text-[var(--text-muted)]">
-                {totalLessons} lecciones &middot; {STAGES.length} etapas
+                {STAGES.length} temas &middot; {totalLessons} lecciones
               </span>
             </div>
-            <h1 className="note-display mt-6 pr-16 text-[clamp(2.6rem,5vw,4.4rem)] font-black leading-[0.98] text-[var(--text)] [font-stretch:100%] sm:pr-0">{COURSE_NAME}</h1>
+            <h1 className="note-display mt-6 pr-16 text-[clamp(2.3rem,4.6vw,4rem)] font-black leading-[0.98] text-[var(--text)] [font-stretch:100%] [text-wrap:balance] sm:pr-0">{COURSE_NAME}</h1>
             <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-[var(--text-muted)]">
-              Un paso a la vez. Construye una base sólida y desbloquea nuevas herramientas mientras avanzas.
+              Un tema a la vez. Construye una base sólida en economía y mercados y avanza hasta las finanzas descentralizadas.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <button type="button" onClick={() => openLesson(resumeIndex)} className="note-btn note-btn-ink">
@@ -694,11 +522,9 @@ export const LearnPage: React.FC = () => {
             <ProgressSeal done={completedSet.size} total={totalLessons} />
             <div className="text-center">
               <div className="note-display text-lg font-extrabold text-[var(--text)]">
-                Nivel {user.level} &middot; {user.levelLabel}
+                {isCourseDone ? 'Curso completado' : `Tema ${course.currentTopic.number} · ${course.currentTopic.shortTitle}`}
               </div>
-              <div className="note-num text-sm text-[var(--text-muted)]">
-                {user.xp} XP &middot; {progress}% del camino
-              </div>
+              <div className="note-num text-sm text-[var(--text-muted)]">{progress}% del camino</div>
             </div>
           </div>
         </div>
@@ -706,71 +532,33 @@ export const LearnPage: React.FC = () => {
 
       <div className="grid gap-10 lg:grid-cols-[1fr_340px] lg:items-stretch">
         <main data-tour="learn-map" className="flex min-w-0 flex-col gap-6">
-          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[var(--rule)] pb-5">
-            <div>
-              <h2 className="note-display text-3xl font-black leading-tight text-[var(--text)] sm:text-4xl">Tu mapa de niveles</h2>
-              <p className="mt-2 text-base text-[var(--text-muted)]">
-                Recorre {WORLD_PHRASES[isGuest ? 'city' : customization.learnWorld]} nivel por nivel. Arrastra el mapa para ver todo el camino.
-              </p>
+          <div className="border-b border-[var(--rule)] pb-5">
+            <div className="flex items-start justify-between gap-4">
+              <h2 className="note-display min-w-0 text-[26px] font-black leading-tight text-[var(--text)] sm:text-4xl">Tu mapa de lecciones</h2>
+              {!isGuest && (
+                <Link to="/perfil?estudio=mundo" aria-label="Cambiar mundo" className="mt-1 inline-flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-[var(--rule)] px-4 text-[14px] font-semibold text-[var(--ink)] transition-colors hover:bg-[var(--paper)]">
+                  <i className="fa-solid fa-earth-americas text-[12px]"></i>
+                  <span className="hidden sm:inline">Cambiar mundo</span>
+                  <span className="sm:hidden">Mundo</span>
+                </Link>
+              )}
             </div>
-            {!isGuest && (
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    updateCustomization({ adminMode: !customization.adminMode })
-                    setPreviewEnd(false)
-                  }}
-                  aria-pressed={isAdminView}
-                  title={isAdminView ? 'Cambiar a usuario normal' : 'Cambiar a admin'}
-                  className={`inline-flex h-10 items-center gap-2 rounded-full border px-4 text-[14px] font-semibold transition-colors ${
-                    isAdminView ? 'border-[var(--ink-3)] bg-[var(--ink-3)] text-[var(--bg)]' : 'border-[var(--rule)] text-[var(--text-muted)] hover:bg-[var(--paper)]'
-                  }`}
-                >
-                  <i className={`fa-solid ${isAdminView ? 'fa-user-shield' : 'fa-user'} text-[12px]`}></i>
-                  {isAdminView ? 'Admin' : 'Usuario'}
-                </button>
-                {isAdminView && (
-                  <button
-                    type="button"
-                    onClick={() => setPreviewEnd((value) => !value)}
-                    aria-pressed={showEnd}
-                    className={`inline-flex h-10 items-center gap-2 rounded-full border px-4 text-[14px] font-semibold transition-colors ${
-                      showEnd ? 'border-[var(--ink)] bg-[var(--ink)] text-[var(--bg)]' : 'border-[var(--rule)] text-[var(--ink)] hover:bg-[var(--paper)]'
-                    }`}
-                  >
-                    <i className={`fa-solid ${showEnd ? 'fa-rotate-left' : 'fa-flag-checkered'} text-[12px]`}></i>
-                    {showEnd ? 'Ver mi progreso' : 'Ver el final'}
-                  </button>
-                )}
-              </div>
-            )}
-            {!isGuest && (
-              <Link to="/perfil?estudio=mundo" className="inline-flex h-10 items-center gap-2 rounded-full border border-[var(--rule)] px-4 text-[14px] font-semibold text-[var(--ink)] transition-colors hover:bg-[var(--paper)]">
-                <i className="fa-solid fa-earth-americas text-[12px]"></i>
-                Cambiar mundo
-              </Link>
-            )}
-            <span className="note-num text-sm font-semibold text-[var(--text-muted)]">
-              {completedSet.size} de {totalLessons} niveles
+            <p className="mt-2 text-base text-[var(--text-muted)]">
+              Recorre {WORLD_PHRASES[isGuest ? 'city' : customization.learnWorld]} tema por tema. Arrastra el mapa para ver todo el camino.
+            </p>
+            <span className="note-num mt-2 block text-sm font-semibold text-[var(--text-muted)]">
+              {completedSet.size} de {totalLessons} lecciones
             </span>
           </div>
-          {showEnd && (
-            <div className="flex items-center gap-3 rounded-2xl border border-dashed border-[var(--ink-3)] bg-[color-mix(in_srgb,var(--ink-3)_8%,transparent)] px-4 py-3 text-[14px] text-[var(--text)]">
-              <i className="fa-solid fa-user-shield text-[var(--ink-3)]"></i>
-              Vista de admin: el mapa muestra el curso terminado. Tu progreso real no cambia.
-            </div>
-          )}
           <div className="relative h-[72vh] min-h-[520px] lg:h-auto lg:flex-1">
             <div className="absolute inset-0">
               <TradingTrailMap
-                key={showEnd ? 'end' : 'real'}
                 lessons={LESSONS}
                 stages={STAGES}
-                statusOf={showEnd ? () => 'completed' : statusOf}
+                statusOf={statusOf}
                 onOpenLesson={openLesson}
-                isCourseDone={showEnd || isCourseDone}
-                completedCount={showEnd ? totalLessons : completedSet.size}
+                isCourseDone={isCourseDone}
+                completedCount={completedSet.size}
                 world={isGuest ? 'city' : customization.learnWorld}
               />
             </div>
@@ -786,105 +574,65 @@ export const LearnPage: React.FC = () => {
                 {completedSet.size} de {totalLessons} lecciones
               </span>
             </div>
-            <div className="mt-3 grid grid-cols-8 gap-1" aria-hidden="true">
-              {LESSONS.map((item, index) => (
-                <span key={item.title} className={`h-2 rounded-full ${completedSet.has(index) ? 'bg-[var(--ink)]' : 'bg-[var(--paper-2)]'}`}></span>
-              ))}
-            </div>
-            <p className="mt-4 text-[15px] leading-relaxed text-[var(--text-muted)]">
-              {isCourseDone ? 'Camino completado. Puedes repasar tus lecciones.' : `Siguiente: ${LESSONS[resumeIndex].title}`}
-            </p>
-            <div className="mt-4 grid grid-cols-3 divide-x divide-[var(--rule)] rounded-2xl border border-[var(--rule)]">
-              {[
-                { value: user.xp, label: 'XP' },
-                { value: user.level, label: 'Nivel' },
-                { value: completedStages, label: 'Etapas' },
-              ].map((stat) => (
-                <div key={stat.label} className="py-2.5 text-center">
-                  <div className="note-display note-num text-lg font-extrabold text-[var(--text)]">{stat.value}</div>
-                  <div className="text-xs text-[var(--text-muted)]">{stat.label}</div>
+            <div className="mt-3 flex gap-1.5" aria-hidden="true">
+              {COURSE_TOPICS.map((topic, topicIndex) => (
+                <div key={topic.number} className="flex gap-[2px]" style={{ flexGrow: topic.lessons.length, flexBasis: 0 }}>
+                  {COURSE_LESSONS.filter((item) => item.topicIndex === topicIndex).map((item) => (
+                    <span key={item.id} className={`h-2 flex-1 rounded-full ${completedSet.has(item.index) ? 'bg-[var(--ink)]' : 'bg-[var(--paper-2)]'}`}></span>
+                  ))}
                 </div>
               ))}
             </div>
-            <p className="mt-3 flex items-center gap-2 text-sm text-[var(--text-muted)]">
-              <i className="fa-solid fa-fire text-[var(--ink-3)]"></i>
-              Racha de {user.streak} días
+            <p className="mt-4 text-[15px] leading-relaxed text-[var(--text-muted)]">
+              {isCourseDone ? 'Camino completado. Puedes repasar tus lecciones.' : `Siguiente: ${COURSE_LESSONS[resumeIndex].id} ${COURSE_LESSONS[resumeIndex].title}`}
             </p>
           </section>
 
           <section className="note-card p-6">
-            <h2 className="note-display text-xl font-extrabold text-[var(--text)]">Recursos para practicar</h2>
-            <p className="mt-1 text-sm text-[var(--text-muted)]">Se desbloquean conforme completas lecciones.</p>
-            <div className="mt-4 space-y-2">
-              {RESOURCES.map((resource, index) => {
-                const threshold = Math.min(resource.threshold, totalLessons)
-                const isUnlocked = completedSet.size >= threshold
-                const isExpanded = activeResource === index && isUnlocked
+            <h2 className="note-display text-xl font-extrabold text-[var(--text)]">Temas del curso</h2>
+            <ol className="mt-4 space-y-3">
+              {course.topicStats.map(({ topic, done, total }, topicIndex) => {
+                const isCurrent = !isCourseDone && topicIndex === course.next.topicIndex
                 return (
-                  <div key={resource.name} className={`overflow-hidden rounded-2xl border ${isExpanded ? 'border-[var(--ink)]' : 'border-[var(--rule)]'}`}>
-                    <button
-                      type="button"
-                      disabled={!isUnlocked}
-                      aria-expanded={isExpanded}
-                      onClick={() => setActiveResource(isExpanded ? null : index)}
-                      className="flex w-full items-center gap-3 p-3.5 text-left disabled:cursor-not-allowed"
+                  <li key={topic.number} className="flex items-center gap-3">
+                    <span
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] ${
+                        done === total || isCurrent ? 'bg-[var(--ink)] text-[var(--bg)]' : 'border border-[var(--rule)] text-[var(--text-muted)]'
+                      }`}
                     >
-                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${isUnlocked ? 'bg-[var(--ink)] text-[var(--bg)]' : 'bg-[var(--bg-alt)] text-[var(--text-dim)]'}`}>
-                        <i className={resource.icon}></i>
+                      <i className={done === total ? 'fa-solid fa-check' : topic.icon}></i>
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className={`block truncate text-[15px] font-semibold ${isCurrent ? 'text-[var(--ink)]' : 'text-[var(--text)]'}`}>
+                        {topic.number}. {topic.shortTitle}
                       </span>
-                      <span className="min-w-0 flex-1">
-                        <span className={`block text-[15px] font-semibold ${isUnlocked ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}`}>{resource.name}</span>
-                        <span className="note-num block text-xs text-[var(--text-muted)]">
-                          {isUnlocked ? 'Desbloqueado · Abrir recurso' : `Completa ${threshold} lecciones (${completedSet.size}/${threshold})`}
-                        </span>
+                      <span className="mt-1 block h-1 overflow-hidden rounded-full bg-[var(--paper-2)]">
+                        <span className="block h-full rounded-full bg-[var(--ink)]" style={{ width: `${(done / total) * 100}%` }}></span>
                       </span>
-                      <i className={`text-xs ${isUnlocked ? 'fa-solid fa-chevron-down text-[var(--ink)]' : 'fa-solid fa-lock text-[var(--text-dim)]'} ${isExpanded ? 'rotate-180' : ''} transition-transform`}></i>
-                    </button>
-                    {isExpanded && (
-                      <div className="space-y-3 border-t border-[var(--rule)] p-4">
-                        <p className="text-[15px] leading-relaxed text-[var(--text)]">{resource.prompt}</p>
-                        <p className="text-xs text-[var(--text-muted)]">
-                          Conceptos de apoyo: {TRADING_MODULES.slice(Math.max(0, threshold - LESSONS_PER_STAGE), threshold).join(' · ')}
-                        </p>
-                        <label htmlFor={`learn-resource-${index}`} className="block text-sm font-semibold text-[var(--text)]">
-                          Tus notas de práctica
-                        </label>
-                        <textarea
-                          id={`learn-resource-${index}`}
-                          className="platform-input"
-                          rows={4}
-                          value={notes[index] || ''}
-                          onChange={(event) => setNotes((previous) => ({ ...previous, [index]: event.target.value }))}
-                          placeholder="Escribe tus observaciones y conclusiones"
-                        />
-                        <Link to={resource.link.to} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--ink)]">
-                          {resource.link.label}
-                          <i className="fa-solid fa-arrow-right text-xs"></i>
-                        </Link>
-                      </div>
-                    )}
-                  </div>
+                    </span>
+                    <span className="note-num shrink-0 text-xs text-[var(--text-muted)]">
+                      {done}/{total}
+                    </span>
+                  </li>
                 )
               })}
-            </div>
+            </ol>
           </section>
 
-          <Link to="/mentor?cat=trading" className="note-paper note-link group relative isolate block overflow-hidden rounded-[20px] p-6">
+          <section className="note-paper relative isolate overflow-hidden rounded-[20px] p-6">
             <SmallRosette className="pointer-events-none absolute -bottom-10 -right-10 -z-10 h-36 w-36 opacity-50" />
             <h2 className="note-display flex items-center gap-2 text-xl font-extrabold text-[var(--text)]">
-              <i className="fa-solid fa-robot text-base text-[var(--ink)]"></i>
-              Kor &middot; Mentor IA
+              <i className="fa-solid fa-signal text-base text-[var(--ink)]"></i>
+              Tres niveles, un camino
             </h2>
-            <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-muted)]">Consulta tus dudas y repasa los conceptos de este camino con Kor.</p>
-            <span className="note-display mt-3 inline-flex items-center gap-1.5 text-base font-bold text-[var(--ink)]">
-              Preguntar a Kor
-              <i className="fa-solid fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1"></i>
-            </span>
-          </Link>
+            <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-muted)]">
+              Empiezas como principiante con economía y mercados, pasas a intermedio con indicadores, blockchain y riesgo, y terminas en avanzado con DeFi.
+            </p>
+          </section>
         </aside>
       </div>
 
-      {unitReward !== null && <RewardModal reward={unitReward} onClose={() => setUnitReward(null)} />}
+      {finishedTopic !== null && <TopicDoneModal topicIndex={finishedTopic} onClose={() => setFinishedTopic(null)} />}
       {isGuest && isGuestGateOpen && <GuestSignupGate onClose={() => setIsGuestGateOpen(false)} />}
     </div>
   )

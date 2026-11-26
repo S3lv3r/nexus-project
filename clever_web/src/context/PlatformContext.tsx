@@ -117,7 +117,7 @@ export const PlatformProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     {
       id: 'init-msg',
       from: 'bot',
-      text: 'Hola. Soy el Mentor de Clever. Conozco tu nivel actual y tus intereses. ¿Qué duda deseas resolver hoy?',
+      text: 'Hola. Soy Kor. ¿Qué duda deseas resolver hoy?',
       timestamp: Date.now(),
     },
   ])
@@ -234,17 +234,11 @@ export const PlatformProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       let newXP = prev.xp + amount
       let newLevel = prev.level
       let nextXP = prev.xpToNext
-      let leveledUp = false
 
       while (newXP >= nextXP) {
         newXP -= nextXP
         newLevel += 1
         nextXP = Math.round(nextXP * 1.25)
-        leveledUp = true
-      }
-
-      if (leveledUp) {
-        showToast(`Nivel ${newLevel}: ${getLevelTitle(newLevel)}`, 'success')
       }
 
       return {
@@ -255,7 +249,7 @@ export const PlatformProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         levelLabel: getLevelTitle(newLevel),
       }
     })
-  }, [showToast])
+  }, [])
 
   const addCoins = useCallback((amount: number) => {
     setUser((prev) => ({
@@ -266,17 +260,13 @@ export const PlatformProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const unlockAchievement = useCallback((achId: string) => {
     setUser((prev) => {
-      if (prev.achievements.includes(achId)) return prev
-      const ach = ACHIEVEMENTS.find((a) => a.id === achId)
-      if (ach) {
-        showToast(`Logro: ${ach.name}`, 'success')
-      }
+      if (prev.achievements.includes(achId) || !ACHIEVEMENTS.some((a) => a.id === achId)) return prev
       return {
         ...prev,
         achievements: [...prev.achievements, achId],
       }
     })
-  }, [showToast])
+  }, [])
 
   const logActivity = useCallback((text: string) => {
     setUser((prev) => ({
@@ -300,8 +290,8 @@ export const PlatformProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     })
     addXP(35)
     addCoins(15)
-    logActivity(`Módulo completado en ${catId}`)
-    showToast('Módulo completado (+35 XP)', 'success')
+    logActivity(`Lección completada en ${catId}`)
+    showToast('Lección completada. Tu avance quedó guardado.', 'success')
   }, [addCoins, addXP, logActivity, showToast])
 
   const completeMission = useCallback((catId: string) => {
@@ -315,7 +305,7 @@ export const PlatformProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     addCoins(mission.coins)
     unlockAchievement('first_challenge')
     logActivity(`Misión cumplida en ${catId}`)
-    showToast(`Misión completada (+${mission.xp} XP)`, 'success')
+    showToast('Misión completada', 'success')
   }, [addCoins, addXP, logActivity, showToast, unlockAchievement])
 
   const saveDiagnostic = useCallback((result: DiagnosticResult) => {
@@ -350,7 +340,7 @@ export const PlatformProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     addCoins(10)
     unlockAchievement('community_voice')
     logActivity(`Publicación en comunidad de ${catId}`)
-    showToast('Aporte publicado (+15 XP)', 'success')
+    showToast('Aporte publicado', 'success')
   }, [addCoins, addXP, logActivity, showToast, unlockAchievement, user.name, user.username])
 
   const likeCommunityPost = useCallback((postId: string) => {

@@ -13,6 +13,8 @@ interface TrailLesson {
   title: string
   stageIndex: number
   scene?: TrailScene
+  code?: string
+  meta?: string
 }
 
 interface TrailStage {
@@ -39,7 +41,7 @@ const FIRST_Y = 300
 const STEP = 210
 const STAGE_GAP = 190
 const ROAD_X_AMPLITUDE = 140
-const DISTRICT_NAMES = ['Barrio del Mercado', 'Distrito Financiero']
+const DISTRICT_NAMES = ['Barrio del Mercado', 'Avenida de las Velas', 'Distrito de Indicadores', 'Puerto Cripto', 'Torre del Riesgo', 'Muelle DeFi']
 const STALL_COLORS = ['#e4572e', '#f2a541', '#2e86ab', '#7a9e3d', '#c0397a']
 interface AdSkin {
   bg: string
@@ -818,7 +820,7 @@ export const TradingTrailMap: React.FC<TradingTrailMapProps> = ({ lessons, stage
                     {String(s + 1).padStart(2, '0')}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="note-wide block text-[10px] font-extrabold opacity-85">{(kit.districts[s] || `Etapa ${s + 1}`).toUpperCase()}</span>
+                    <span className="note-wide block text-[10px] font-extrabold opacity-85">{`Tema ${s + 1}${kit.districts[s] ? ` · ${kit.districts[s]}` : ''}`.toUpperCase()}</span>
                     <span className="note-display block text-base font-black leading-tight sm:text-lg">{stage.title}</span>
                   </span>
                   <span className="note-num text-sm font-bold opacity-90">
@@ -835,7 +837,6 @@ export const TradingTrailMap: React.FC<TradingTrailMapProps> = ({ lessons, stage
             const isLocked = status === 'locked'
             const size = isCurrent ? (isCompact ? 60 : 84) : isCompact ? 46 : 66
             const labelOnLeft = point.x >= W / 2
-            const xp = i % 3 === 0 ? 30 : 50
             const left = pct(point.x, W)
             const top = pct(point.y, H)
             return (
@@ -847,7 +848,7 @@ export const TradingTrailMap: React.FC<TradingTrailMapProps> = ({ lessons, stage
                   type="button"
                   disabled={isLocked}
                   onClick={() => handleOpen(i)}
-                  aria-label={`Lección ${i + 1}: ${lessons[i].title}. ${status === 'completed' ? 'Completada' : isCurrent ? 'Siguiente lección' : status === 'available' ? 'Disponible' : 'Bloqueada'}`}
+                  aria-label={`Lección ${lessons[i].code || i + 1}: ${lessons[i].title}. ${status === 'completed' ? 'Completada' : isCurrent ? 'Siguiente lección' : status === 'available' ? 'Disponible' : 'Bloqueada'}`}
                   className="city-node absolute z-20 flex items-center justify-center rounded-full disabled:cursor-not-allowed"
                   style={{
                     left,
@@ -865,7 +866,7 @@ export const TradingTrailMap: React.FC<TradingTrailMapProps> = ({ lessons, stage
                 >
                   {status === 'completed' && <i className="fa-solid fa-check text-2xl"></i>}
                   {isCurrent && <i className={`fa-solid fa-play ${isCompact ? 'text-xl' : 'text-3xl'}`}></i>}
-                  {status === 'available' && <span className={`note-display note-num font-black ${isCompact ? 'text-lg' : 'text-2xl'}`}>{i + 1}</span>}
+                  {status === 'available' && <span className={`note-display note-num font-black ${isCompact ? 'text-base' : 'text-xl'}`}>{lessons[i].code || i + 1}</span>}
                   {isLocked && <i className="fa-solid fa-lock text-lg"></i>}
                   {status === 'completed' && (
                     <span className="absolute -bottom-3 left-1/2 flex -translate-x-1/2 gap-0.5 rounded-full bg-white px-1.5 py-0.5" aria-hidden="true">
@@ -890,7 +891,8 @@ export const TradingTrailMap: React.FC<TradingTrailMapProps> = ({ lessons, stage
                   }}
                 >
                   <span className={`note-num block ${isCompact ? 'text-[9px]' : 'text-[11px]'} ${isLocked ? 'text-[#9aa1ad]' : 'text-[#5b6472]'}`}>
-                    Nivel {String(i + 1).padStart(2, '0')} &middot; +{xp} XP
+                    Lección {lessons[i].code || String(i + 1).padStart(2, '0')}
+                    {lessons[i].meta ? ` · ${lessons[i].meta}` : ''}
                   </span>
                   <FitText as="span" minSize={8} className={`note-display block font-bold leading-snug ${isCompact ? 'text-[11px]' : 'text-sm'} ${isLocked ? 'text-[#7b8390]' : 'text-[#111827]'}`}>{lessons[i].title}</FitText>
                 </button>

@@ -17,7 +17,6 @@ import {
   MAX_STATUS_LENGTH,
   NAV_STYLES,
   PROFILE_LAYOUTS,
-  STAT_OPTIONS,
   STATUS_ICONS,
   unlockKey,
 } from '../../data/profileCustomizationOptions'
@@ -25,7 +24,7 @@ import { ACCENT_COLORS, THEME_GROUPS, THEME_OPTIONS } from '../../data/themeOpti
 import type { ThemeOption } from '../../data/themeOptions'
 import { getUnlockState, loadProfileCustomization, resetProfileCustomization, useProfileCustomization } from '../../services/profileCustomizationService'
 import type { UnlockState } from '../../services/profileCustomizationService'
-import type { HomeMainSection, HomeSideSection, LearnWorld, NavStyle, ProfileLayout, StatId, UnlockRule } from '../../types/profileCustomization'
+import type { HomeMainSection, HomeSideSection, LearnWorld, NavStyle, ProfileLayout, UnlockRule } from '../../types/profileCustomization'
 
 export type StudioTabId = 'diseno' | 'inicio' | 'datos' | 'tema' | 'barra' | 'mundo'
 
@@ -537,13 +536,7 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ open, tab, onTabCh
     }
     resetProfileCustomization(user.username)
     setConfirmReset(false)
-    showToast('Estilo restablecido. Tus compras se conservan.', 'success')
-  }
-
-  const toggleStat = (id: StatId) => {
-    const has = custom.visibleStats.includes(id)
-    if (has && custom.visibleStats.length === 1) return
-    update({ visibleStats: has ? custom.visibleStats.filter((item) => item !== id) : [...custom.visibleStats, id] })
+    showToast('Estilo restablecido', 'success')
   }
 
   const inputClass = 'w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-[14px] text-[var(--text)] outline-none transition-colors focus:border-[var(--ink)]'
@@ -570,25 +563,6 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ open, tab, onTabCh
               <h2 className="note-display text-[24px] font-black leading-tight text-[var(--text)]">Personaliza tu Clever</h2>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  update({ adminMode: !custom.adminMode })
-                  showToast(custom.adminMode ? 'Modo usuario: los bloqueos vuelven a aplicar' : 'Modo admin: todo desbloqueado para pruebas', 'info')
-                }}
-                aria-pressed={custom.adminMode}
-                title={custom.adminMode ? 'Cambiar a usuario normal' : 'Cambiar a admin'}
-                className={`inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-[13px] font-bold transition-colors ${
-                  custom.adminMode ? 'border-[var(--ink-3)] bg-[var(--ink-3)] text-[var(--bg)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)]'
-                }`}
-              >
-                <i className={`fa-solid ${custom.adminMode ? 'fa-user-shield' : 'fa-user'} text-[12px]`}></i>
-                {custom.adminMode ? 'Admin' : 'Usuario'}
-              </button>
-              <span className="note-num inline-flex h-9 items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,#d99a1e_35%,var(--border))] bg-[color-mix(in_srgb,#d99a1e_10%,var(--surface))] px-3 text-[14px] font-bold text-[var(--text)]">
-                <i className="fa-solid fa-coins text-[12px] text-[#d99a1e]"></i>
-                {user.coins}
-              </span>
               <button type="button" onClick={onClose} aria-label="Cerrar estudio" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:text-[var(--text)]">
                 <i className="fa-solid fa-xmark"></i>
               </button>
@@ -749,37 +723,12 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ open, tab, onTabCh
                   ))}
                 </div>
                 <div className="mt-3">
-                  <Toggle checked={custom.showLevelRing} onChange={(value) => update({ showLevelRing: value })} label="Anillo de nivel" hint="Muestra tu avance de XP alrededor de la foto" />
-                </div>
-              </div>
-
-              <div>
-                <SectionTitle icon="fa-solid fa-chart-simple" title="Estado de cuenta" hint="Elige qué números se muestran." />
-                <div className="flex flex-wrap gap-2">
-                  {STAT_OPTIONS.map((option) => {
-                    const active = custom.visibleStats.includes(option.id)
-                    return (
-                      <button
-                        key={option.id}
-                        type="button"
-                        aria-pressed={active}
-                        onClick={() => toggleStat(option.id)}
-                        className={`inline-flex h-10 items-center gap-2 rounded-full border-2 px-3.5 text-[13px] font-semibold transition-colors ${
-                          active ? 'border-[var(--ink)] bg-[color-mix(in_srgb,var(--ink)_10%,transparent)] text-[var(--ink)]' : 'border-[var(--border)] text-[var(--text-muted)]'
-                        }`}
-                      >
-                        <i className={option.icon}></i>
-                        {option.label}
-                      </button>
-                    )
-                  })}
+                  <Toggle checked={custom.showLevelRing} onChange={(value) => update({ showLevelRing: value })} label="Anillo de progreso" hint="Muestra tu avance del curso alrededor de la foto" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <SectionTitle icon="fa-solid fa-sliders" title="Secciones y efectos" />
-                <Toggle checked={custom.showStreakCalendar} onChange={(value) => update({ showStreakCalendar: value })} label="Calendario de racha" />
-                <Toggle checked={custom.showLevelJourney} onChange={(value) => update({ showLevelJourney: value })} label="Ruta de niveles" />
+                <SectionTitle icon="fa-solid fa-sliders" title="Efectos" />
                 <Toggle checked={custom.glow} onChange={(value) => update({ glow: value })} label="Resplandor" hint="Sombra de color bajo tu tarjeta principal" />
                 <Toggle checked={custom.tilt} onChange={(value) => update({ tilt: value })} label="Movimiento 3D" hint="Las tarjetas se inclinan al pasar el cursor" />
                 <Toggle checked={custom.density === 'compact'} onChange={(value) => update({ density: value ? 'compact' : 'comfortable' })} label="Vista compacta" />

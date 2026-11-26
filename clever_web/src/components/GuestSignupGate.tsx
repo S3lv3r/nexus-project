@@ -41,7 +41,7 @@ export const GuestSignupGate: React.FC<GuestSignupGateProps> = ({ onClose }) => 
           Crea tu cuenta para empezar el camino
         </h2>
         <p className="mt-3 text-base leading-relaxed text-[var(--text-muted)]">
-          Las lecciones de Trading y Finanzas son gratis, pero necesitas una cuenta para guardar tu avance, ganar XP y desbloquear cada etapa.
+          Las 25 lecciones del curso son gratis, pero necesitas una cuenta para guardar tu avance y desbloquear cada tema.
         </p>
         <ul className="mt-5 space-y-2 text-[15px] text-[var(--text)]">
           <li className="flex items-center gap-3">
@@ -50,11 +50,11 @@ export const GuestSignupGate: React.FC<GuestSignupGateProps> = ({ onClose }) => 
           </li>
           <li className="flex items-center gap-3">
             <i className="fa-solid fa-check text-[var(--primary)]"></i>
-            Misiones diarias, rachas y recompensas
+            Seis temas con ejemplos, tablas y actividades
           </li>
           <li className="flex items-center gap-3">
             <i className="fa-solid fa-check text-[var(--primary)]"></i>
-            Kor te acompaña en cada etapa
+            Kor te acompaña en cada tema
           </li>
         </ul>
         <div className="mt-7 grid gap-3">
