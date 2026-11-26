@@ -4,6 +4,7 @@ export type HudIconKey =
   | 'book' | 'bulb' | 'chart' | 'user' | 'users' | 'broker' | 'bank' | 'bars' | 'layers' | 'drop' | 'swap' | 'doc'
   | 'globe' | 'apple' | 'calendar' | 'trendUp' | 'arrowUpRight' | 'arrowDownRight' | 'info' | 'bolt' | 'sun'
   | 'wave' | 'mountain' | 'note' | 'basket' | 'bitcoin' | 'chevronUp' | 'chevronDown' | 'chevronLeft' | 'chevronRight' | 'mouse' | 'arrowRight' | 'candles' | 'sliders' | 'alert' | 'scroll'
+  | 'wallet' | 'piggy' | 'card' | 'shield' | 'receipt' | 'hourglass' | 'newspaper' | 'calculator' | 'clock'
 
 const Svg: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = 'h-5 w-5' }) => (
   <svg
@@ -59,6 +60,15 @@ export const HUD_ICONS: Record<HudIconKey, React.FC<IconProps>> = {
   scroll: (p) => (<Svg {...p}><path d="M6 4h9a3 3 0 0 1 3 3v13H9a3 3 0 0 1-3-3z" /><path d="M9 8h6M9 12h6M9 16h3" /></Svg>),
   mouse: (p) => (<Svg {...p}><rect x="7" y="3" width="10" height="18" rx="5" /></Svg>),
   arrowRight: (p) => (<Svg {...p}><path d="M4 12h16M14 6l6 6-6 6" /></Svg>),
+  wallet: (p) => (<Svg {...p}><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3" /><rect x="4" y="8" width="16" height="11" rx="2" /><path d="M16 13.5h.01" /></Svg>),
+  piggy: (p) => (<Svg {...p}><path d="M5 11a6 5 0 0 1 11-2.5h2l1 2v3l-1.5.5-1 2.5h-2l-.5-1.5h-4l-.5 1.5h-2l-1-2.5A5 5 0 0 1 5 11z" /><path d="M10 6.5h3M15.5 11h.01" /></Svg>),
+  card: (p) => (<Svg {...p}><rect x="3" y="5.5" width="18" height="13" rx="2" /><path d="M3 10h18M7 15h3" /></Svg>),
+  shield: (p) => (<Svg {...p}><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" /><path d="M9 12l2 2 4-4" /></Svg>),
+  receipt: (p) => (<Svg {...p}><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21z" /><path d="M9 8h6M9 12h6M9 16h3" /></Svg>),
+  hourglass: (p) => (<Svg {...p}><path d="M7 3h10M7 21h10" /><path d="M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9" /></Svg>),
+  newspaper: (p) => (<Svg {...p}><path d="M5 5h12v14H6.5A1.5 1.5 0 0 1 5 17.5z" /><path d="M17 9h2v8.5a1.5 1.5 0 0 1-3 0" /><path d="M8 8h6M8 12h6M8 15h4" /></Svg>),
+  calculator: (p) => (<Svg {...p}><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M8 7h8M8 11h.01M12 11h.01M16 11h.01M8 14.5h.01M12 14.5h.01M16 14.5h.01M8 18h.01M12 18h4" /></Svg>),
+  clock: (p) => (<Svg {...p}><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></Svg>),
 }
 
 export type HudToneKey = 'sky' | 'violet' | 'emerald' | 'amber' | 'rose' | 'teal'

@@ -212,10 +212,10 @@ export const AnalysisOptionCard: React.FC<AnalysisOptionCardProps> = ({
       style={reveal ? { transitionDelay: `${delay}ms` } : undefined}
       className={
         reveal
-          ? `h-full transition duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+          ? `@container h-full transition duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
               shown ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-6 scale-[0.97] opacity-0'
             }`
-          : 'h-full'
+          : '@container h-full'
       }
     >
       <AnalysisOptionStyles />
@@ -238,7 +238,7 @@ export const AnalysisOptionCard: React.FC<AnalysisOptionCardProps> = ({
         } as React.CSSProperties}
         className={`ao-root ${compact ? 'ao-compact' : ''} group relative flex h-full flex-col overflow-hidden rounded-[2rem] border bg-[var(--surface)] shadow-sm shadow-black/10 transition-[transform,box-shadow,border-color] duration-200 ease-out hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 motion-reduce:transition-none ${
           compact
-            ? 'min-h-0 p-5 sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] sm:items-center sm:gap-x-4'
+            ? 'min-h-0 p-5 @sm:grid @sm:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] @sm:items-center @sm:gap-x-4'
             : 'min-h-[380px] p-7 sm:p-8'
         } ${theme.border} ${theme.glow} ${theme.ring} ${selected ? theme.selected : ''}`}
       >
@@ -272,7 +272,7 @@ export const AnalysisOptionCard: React.FC<AnalysisOptionCardProps> = ({
         />
         <span aria-hidden="true" className="ao-shine" />
 
-        <span className={`relative z-10 flex items-center justify-between ${compact ? 'sm:col-start-1 sm:row-start-1' : ''}`}>
+        <span className={`relative z-10 flex items-center justify-between ${compact ? '@sm:col-start-1 @sm:row-start-1' : ''}`}>
           <span
             className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ring-1 backdrop-blur ao-chip ${theme.chip}`}
           >
@@ -286,7 +286,7 @@ export const AnalysisOptionCard: React.FC<AnalysisOptionCardProps> = ({
           </span>
         </span>
 
-        <span className={`relative z-10 block ${compact ? 'mt-3 sm:col-start-1 sm:row-start-2' : 'mt-5'}`}>
+        <span className={`relative z-10 block ${compact ? 'mt-3 @sm:col-start-1 @sm:row-start-2' : 'mt-5'}`}>
           <span
             className={`block font-semibold tracking-tight text-[var(--text)] ${
               compact ? 'text-xl' : 'text-2xl sm:text-[1.75rem]'
@@ -294,26 +294,28 @@ export const AnalysisOptionCard: React.FC<AnalysisOptionCardProps> = ({
           >
             {title}
           </span>
-          <span className={`ao-desc mt-2 block max-w-xs leading-relaxed text-[var(--text-muted)] ${compact ? 'text-xs' : 'text-sm'}`}>
+          <span className={`ao-desc mt-2 block max-w-xs leading-relaxed text-[var(--text-muted)] ${compact ? 'max-w-[58%] text-xs @sm:max-w-xs' : 'text-sm'}`}>
             {description}
           </span>
         </span>
 
         <span
-          className={`relative z-10 flex items-center justify-center ${
-            compact ? 'my-2 sm:col-start-2 sm:row-span-3 sm:row-start-1 sm:my-0' : 'my-4 flex-1'
+          className={`flex items-center justify-center ${
+            compact
+              ? 'pointer-events-none absolute bottom-4 right-4 z-0 w-[38%] max-w-[150px] @sm:z-10 @sm:pointer-events-auto @sm:relative @sm:bottom-auto @sm:right-auto @sm:w-auto @sm:max-w-none @sm:col-start-2 @sm:row-span-3 @sm:row-start-1'
+              : 'relative z-10 my-4 flex-1'
           }`}
         >
           <span
             className={`ao-illu block w-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] motion-reduce:transition-none ${
-              compact ? 'max-w-[200px]' : 'max-w-[290px]'
+              compact ? '@sm:max-w-[200px]' : 'max-w-[290px]'
             }`}
           >
             <Illustration active={selected} />
           </span>
         </span>
 
-        <span className={`relative z-10 flex items-center ${compact ? 'mt-3 sm:col-start-1 sm:row-start-3' : ''}`}>
+        <span className={`relative z-10 flex items-center ${compact ? 'mt-auto pt-3 @sm:mt-3 @sm:pt-0 @sm:col-start-1 @sm:row-start-3' : ''}`}>
           <span
             className={`inline-flex items-center rounded-full font-semibold ring-1 backdrop-blur transition duration-300 ${
               compact ? 'gap-2 py-1 pl-4 pr-1 text-xs' : 'gap-3 py-1.5 pl-5 pr-1.5 text-sm'

@@ -55,7 +55,8 @@ export const TraderTypesCard: React.FC = () => {
         <p aria-live="polite" className="hc-pitch-a">
           {choice ? (
             <span key={choice.name} className="hc-swap inline-block">
-              Te inclinas por ser <strong>{choice.name}</strong>: {choice.pitch}
+              Elegiste ser <strong>Team {choice.name}</strong>.{' '}
+              <em className="hc-pitch-note">Se cargó tu elección a tu perfil</em>
             </span>
           ) : (
             'Toca una opción para elegir.'

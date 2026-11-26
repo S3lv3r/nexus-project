@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { AnalysisOptionCard } from '../components/analysis/AnalysisOptionCard'
 import { ANALYSIS_OPTIONS } from '../components/analysis/AnalysisOptions'
 import { requestedSectionIndex } from '../components/analysis/analysisRoute'
@@ -74,13 +74,6 @@ export const AnalysisPage: React.FC = () => {
             Guía práctica para la interpretación de gráficos de precios y estructuras de mercado.
           </p>
         </div>
-
-        <Link
-          to="/exchange"
-          className="platform-btn-secondary self-start px-3 py-1.5 text-xs transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
-        >
-          Ver gráficos en vivo
-        </Link>
       </header>
 
       <p aria-live="polite" className="sr-only">
@@ -93,6 +86,8 @@ export const AnalysisPage: React.FC = () => {
           onSelect={goTo}
           onPrev={prev}
           onNext={next}
+          hintTitle="Cambia de categoría"
+          hintText="con la lista o con estas flechas"
           className="lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:self-start lg:pt-7"
         />
 
@@ -123,7 +118,7 @@ export const AnalysisPage: React.FC = () => {
             <HudItem order={0}>
               <TraderTypesCard />
             </HudItem>
-            <div className="grid min-h-0 gap-4 lg:grid-cols-2">
+            <div className="grid min-h-0 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {ANALYSIS_OPTIONS.map(({ kind, path, ...option }, i) => (
                 <HudItem key={kind} order={i + 1}>
                   <AnalysisOptionCard {...option} to={path} compact reveal={false} />
