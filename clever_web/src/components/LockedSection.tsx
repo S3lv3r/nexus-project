@@ -20,7 +20,7 @@ const LOCK_STYLES = `
 @media (prefers-reduced-motion:reduce){.lk-card,.lk-shackle,.lk-ring{animation:none}}
 `
 
-export const LockedSection: React.FC<LockedSectionProps> = ({ kicker = 'PRÓXIMAMENTE', heading, title, message, children }) => (
+export const LockedSection: React.FC<LockedSectionProps> = ({ kicker = 'DESBLOQUÉALO', heading, title, message, children }) => (
   <div className="relative isolate mx-auto w-full max-w-7xl py-4">
     <style>{LOCK_STYLES}</style>
     <header className="mb-5 flex flex-wrap items-end justify-between gap-4 px-1">
