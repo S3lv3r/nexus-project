@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { usePlatform } from '../context/PlatformContext'
 import { COURSE_LESSONS, COURSE_TOPICS, TOTAL_LESSONS, getCourseProgress, lessonPath } from '../data/course'
@@ -10,7 +10,9 @@ import type { StudioTabId } from '../components/profile/ProfileStudio'
 import { PROFILE_STYLES } from '../components/profile/ProfileVisuals'
 import { CardHero, CredentialHero, LAYOUT_STYLES, OfficeHero, getFolio } from '../components/profile/ProfileLayouts'
 import type { HeroProps } from '../components/profile/ProfileLayouts'
-import { exportProfileCard } from '../components/profile/profileCard'
+import { exportCredentialImage } from '../components/profile/profileCard'
+import { CredentialCard, credentialFolio } from '../components/profile/CredentialCard'
+import { memberSince } from '../components/profile/ProfileLayouts'
 import { useProfileCustomization } from '../services/profileCustomizationService'
 
 
@@ -56,6 +58,7 @@ export const ProfilePage: React.FC = () => {
   const [custom] = useProfileCustomization(user.username)
   const [searchParams, setSearchParams] = useSearchParams()
   const [isExporting, setIsExporting] = useState(false)
+  const exportRef = useRef<HTMLDivElement>(null)
 
   const requested = searchParams.get('estudio') as StudioTabId | null
   const studioOpen = Boolean(requested && STUDIO_TAB_IDS.includes(requested))
@@ -83,33 +86,31 @@ export const ProfilePage: React.FC = () => {
   const world = LEARN_WORLDS.find((item) => item.id === custom.learnWorld) || LEARN_WORLDS[0]
   const gap = custom.density === 'compact' ? 'space-y-5' : 'space-y-8'
 
-  const handleExport = async () => {
+  const handleExport = () => {
     if (isExporting) return
     setIsExporting(true)
-    try {
-      await exportProfileCard({
-        displayName,
-        username: user.username,
-        lessonsDone,
-        lessonsTotal,
-        topicsDone: course.topicsDone,
-        topicsTotal: COURSE_TOPICS.length,
-        progress: course.percent,
-        currentTopicLabel,
-        avatar: avatarSrc,
-        shape: custom.avatarShape,
-        initials,
-        colorA: custom.bannerColorA,
-        colorB: custom.bannerColorB,
-        status: custom.status,
-      })
-      showToast('Tarjeta descargada', 'success')
-    } catch {
-      showToast('No se pudo generar la tarjeta', 'error')
-    } finally {
-      setIsExporting(false)
-    }
   }
+
+  useEffect(() => {
+    if (!isExporting) return
+    let alive = true
+    const run = async () => {
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 60))
+        if (!exportRef.current) throw new Error('missing')
+        await exportCredentialImage(exportRef.current, user.username)
+        if (alive) showToast('Credencial descargada', 'success')
+      } catch {
+        if (alive) showToast('No se pudo generar la credencial', 'error')
+      } finally {
+        if (alive) setIsExporting(false)
+      }
+    }
+    run()
+    return () => {
+      alive = false
+    }
+  }, [isExporting, showToast, user.username])
 
   const statusSlot = custom.status ? (
     <button
@@ -139,7 +140,7 @@ export const ProfilePage: React.FC = () => {
         <i className="fa-solid fa-wand-magic-sparkles text-[13px]"></i>
         Personalizar
       </button>
-      <button type="button" onClick={handleExport} disabled={isExporting} aria-label="Descargar tarjeta" title="Descargar tarjeta" className="note-btn note-btn-line h-11 w-11 px-0 disabled:opacity-60">
+      <button type="button" onClick={handleExport} disabled={isExporting} aria-label="Descargar credencial" title="Descargar credencial" className="note-btn note-btn-line h-11 w-11 px-0 disabled:opacity-60">
         {isExporting ? <i className="fa-solid fa-circle-notch fa-spin"></i> : <i className="fa-solid fa-download text-[14px]"></i>}
       </button>
     </>
@@ -164,6 +165,26 @@ export const ProfilePage: React.FC = () => {
 
   return (
     <div className={`note-home mx-auto max-w-6xl py-2 transition-[padding] duration-300 sm:py-4 ${studioOpen ? 'lg:pr-[452px]' : ''}`}>
+      {isExporting && (
+        <div aria-hidden="true" className="pointer-events-none fixed left-[-10000px] top-0">
+          <div ref={exportRef} className="w-[380px] bg-[var(--bg)] p-5">
+            <CredentialCard
+              user={user}
+              custom={custom}
+              displayName={user.username || user.name}
+              avatarUrl={avatarSrc}
+              email={user.email}
+              footer={
+                <div className="flex items-center justify-between rounded-2xl border border-[var(--rule)] px-4 py-2.5 text-[13px] text-[var(--text-muted)]">
+                  <span>Miembro desde</span>
+                  <span className="font-semibold capitalize text-[var(--text)]">{memberSince(user.createdAt)}</span>
+                </div>
+              }
+            />
+            <div className="note-num mt-3 text-center text-[10px] tracking-[0.2em] text-[var(--text-muted)]">CLEVER · CREDENCIAL {credentialFolio(user.username || user.name)}</div>
+          </div>
+        </div>
+      )}
       <style>{NOTE_STYLES}</style>
       <style>{PROFILE_STYLES}</style>
       <style>{LAYOUT_STYLES}</style>
