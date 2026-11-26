@@ -4,12 +4,12 @@ export interface ProfileCardData {
   shape?: CardAvatarShape
   displayName: string
   username: string
-  level: number
-  levelLabel: string
-  coins: number
-  streak: number
-  achievementsUnlocked: number
-  achievementsTotal: number
+  lessonsDone: number
+  lessonsTotal: number
+  topicsDone: number
+  topicsTotal: number
+  progress: number
+  currentTopicLabel: string
   avatar?: string
   initials: string
   colorA: string
@@ -135,13 +135,15 @@ const drawCard = (
   ctx.font = `500 30px ${FONT_FAMILY}`
   ctx.fillText(`@${data.username}`, 352, 245)
 
+  ctx.font = `700 24px ${FONT_FAMILY}`
+  const pillText = data.currentTopicLabel.slice(0, 34)
+  const pillWidth = Math.min(640, ctx.measureText(pillText).width + 48)
   ctx.fillStyle = colorA
   ctx.beginPath()
-  ctx.roundRect(352, 270, 260, 48, 24)
+  ctx.roundRect(352, 270, pillWidth, 48, 24)
   ctx.fill()
   ctx.fillStyle = '#ffffff'
-  ctx.font = `700 24px ${FONT_FAMILY}`
-  ctx.fillText(`Nivel ${data.level} - ${data.levelLabel}`.slice(0, 24), 376, 303)
+  ctx.fillText(pillText, 376, 303)
 
   if (data.status) {
     ctx.fillStyle = '#334155'
@@ -150,10 +152,10 @@ const drawCard = (
   }
 
   const stats = [
-    { label: 'Nivel', value: String(data.level) },
-    { label: 'Monedas', value: String(data.coins) },
-    { label: 'Racha', value: `${data.streak} d` },
-    { label: 'Logros', value: `${data.achievementsUnlocked}/${data.achievementsTotal}` },
+    { label: 'Lecciones', value: `${data.lessonsDone}/${data.lessonsTotal}` },
+    { label: 'Temas', value: `${data.topicsDone}/${data.topicsTotal}` },
+    { label: 'Avance', value: `${data.progress}%` },
+    { label: 'Curso', value: data.progress >= 100 ? 'Listo' : 'En curso' },
   ]
 
   const boxWidth = 235
@@ -221,4 +223,4 @@ export const exportProfileCard = async (data: ProfileCardData) => {
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
-}
+}

@@ -14,15 +14,24 @@ export interface AchievementItem {
   icon?: string
 }
 
+export interface TopicMark {
+  number: number
+  label: string
+  icon: string
+  done: number
+  total: number
+}
+
 export interface HeroProps {
   user: UserProfile
   custom: ProfileCustomization
   avatarSrc: string
   initials: string
   displayName: string
-  xpPercent: number
-  unlocked: AchievementItem[]
-  pinned: AchievementItem[]
+  progress: number
+  topics: TopicMark[]
+  currentTopic: number
+  currentTopicLabel: string
   folio: string
   lessonsDone: number
   lessonsTotal: number
@@ -119,50 +128,55 @@ const Avatar: React.FC<{ props: HeroProps; size: number }> = ({ props, size }) =
     frame={props.custom.frameStyle}
     frameColor={props.custom.frameColor || 'var(--ink)'}
     showLevelRing={props.custom.showLevelRing}
-    progress={props.xpPercent}
-    level={props.user.level}
+    progress={props.progress}
     size={size}
   />
 )
 
-const XpThread: React.FC<{ user: UserProfile; xpPercent: number }> = ({ user, xpPercent }) => (
+const CourseThread: React.FC<{ done: number; total: number; progress: number }> = ({ done, total, progress }) => (
   <div>
     <div className="mb-1.5 flex items-baseline justify-between gap-3">
-      <span className="note-wide text-[10px] font-bold text-[var(--ink)]">HILO DE SEGURIDAD · NIVEL {user.level}</span>
+      <span className="note-wide text-[10px] font-bold text-[var(--ink)]">HILO DE SEGURIDAD · AVANCE DEL CURSO</span>
       <span className="note-num text-[13px] font-semibold text-[var(--text-muted)]">
-        {user.xp} / {user.xpToNext} XP
+        {done} / {total} lecciones
       </span>
     </div>
     <div
       className="relative h-3.5 overflow-hidden rounded-full border border-[var(--rule)] bg-[var(--paper)]"
       role="progressbar"
-      aria-valuenow={xpPercent}
+      aria-valuenow={progress}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-label="Progreso de experiencia"
+      aria-label="Avance del curso"
     >
-      <div className="note-thread h-full rounded-full transition-[width] duration-1000" style={{ width: `${Math.max(xpPercent, 3)}%` }}></div>
+      <div className="note-thread h-full rounded-full transition-[width] duration-1000" style={{ width: `${Math.max(progress, 3)}%` }}></div>
       <div className="note-shine absolute inset-0"></div>
     </div>
   </div>
 )
 
-const PinnedStamps: React.FC<{ pinned: AchievementItem[] }> = ({ pinned }) => (
-  <div className="flex items-center gap-2">
-    {Array.from({ length: 3 }).map((_, i) => {
-      const item = pinned[i]
-      return item ? (
+const TopicPips: React.FC<{ topics: TopicMark[]; tone?: 'ink' | 'light' }> = ({ topics, tone = 'ink' }) => (
+  <div className="flex items-center gap-1.5">
+    {topics.map((topic) => {
+      const isDone = topic.done === topic.total
+      const started = topic.done > 0
+      return (
         <span
-          key={item.id}
-          title={item.name}
-          className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-double border-[var(--ink-3)] text-[15px] text-[var(--ink-3)]"
-          style={{ transform: `rotate(${(i - 1) * 8}deg)`, background: 'color-mix(in srgb, var(--ink-3) 8%, transparent)' }}
+          key={topic.number}
+          title={`Tema ${topic.number} · ${topic.label}: ${topic.done}/${topic.total}`}
+          className={`flex h-9 w-9 items-center justify-center rounded-full text-[12px] ${
+            tone === 'light'
+              ? isDone
+                ? 'bg-white text-[#0e1420]'
+                : 'border border-white/30 text-white/70'
+              : isDone
+                ? 'bg-[var(--ink)] text-[var(--bg)]'
+                : started
+                  ? 'border-2 border-[var(--ink)] text-[var(--ink)]'
+                  : 'border border-dashed border-[var(--rule)] text-[var(--text-dim)]'
+          }`}
         >
-          <i className={item.icon || 'fa-solid fa-medal'}></i>
-        </span>
-      ) : (
-        <span key={i} className="flex h-11 w-11 items-center justify-center rounded-full border border-dashed border-[var(--rule)] text-[11px] text-[var(--text-dim)]">
-          <i className="fa-solid fa-plus"></i>
+          <i className={isDone ? 'fa-solid fa-check' : topic.icon}></i>
         </span>
       )
     })}
@@ -170,7 +184,7 @@ const PinnedStamps: React.FC<{ pinned: AchievementItem[] }> = ({ pinned }) => (
 )
 
 export const CredentialHero: React.FC<HeroProps> = (props) => {
-  const { user, custom, displayName, folio, xpPercent, pinned, statusSlot, actions } = props
+  const { user, custom, displayName, folio, progress, topics, currentTopic, currentTopicLabel, lessonsDone, lessonsTotal, statusSlot, actions } = props
   return (
     <section
       className="note-bill relative overflow-hidden rounded-[28px] border border-[var(--rule)] bg-[var(--surface)]"
@@ -199,7 +213,7 @@ export const CredentialHero: React.FC<HeroProps> = (props) => {
             <div className="mt-2.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[14px] text-[var(--text-muted)] sm:justify-start">
               <span className="font-semibold text-[var(--text)]">@{user.username}</span>
               <span className="h-1 w-1 rounded-full bg-[var(--text-dim)]"></span>
-              <span>{user.levelLabel}</span>
+              <span>{currentTopicLabel}</span>
               <span className="h-1 w-1 rounded-full bg-[var(--text-dim)]"></span>
               <span>Desde {memberSince(user.createdAt)}</span>
             </div>
@@ -212,17 +226,17 @@ export const CredentialHero: React.FC<HeroProps> = (props) => {
           {user.bio && <p className="text-center text-[15px] leading-relaxed text-[var(--text)] sm:text-left">{user.bio}</p>}
         </div>
 
-        <div className="mt-7 grid gap-6 border-t border-dashed border-[var(--rule)] pt-6 md:grid-cols-[1fr_auto_auto] md:items-center">
-          <XpThread user={user} xpPercent={xpPercent} />
-          <div className="flex items-center justify-center gap-3 md:justify-start">
-            <span className="note-wide text-[10px] font-bold text-[var(--text-muted)]">SELLOS</span>
-            <PinnedStamps pinned={pinned} />
+        <div className="mt-7 grid gap-6 border-t border-dashed border-[var(--rule)] pt-6 @4xl:grid-cols-[1fr_auto_auto] @4xl:items-center">
+          <CourseThread done={lessonsDone} total={lessonsTotal} progress={progress} />
+          <div className="flex flex-wrap items-center justify-center gap-3 @4xl:justify-start">
+            <span className="note-wide text-[10px] font-bold text-[var(--text-muted)]">TEMAS</span>
+            <TopicPips topics={topics} />
           </div>
-          <div className="relative mx-auto flex h-24 w-24 items-center justify-center md:mx-0">
+          <div className="relative mx-auto flex h-24 w-24 items-center justify-center @4xl:mx-0">
             <SmallRosette className="pl-seal-spin absolute inset-0 h-full w-full" />
             <span className="relative flex h-14 w-14 flex-col items-center justify-center rounded-full bg-[var(--ink)] text-[var(--bg)]">
-              <span className="note-wide text-[7px] font-bold opacity-80">NIVEL</span>
-              <span className="note-display note-num text-[22px] font-black leading-none">{user.level}</span>
+              <span className="note-wide text-[7px] font-bold opacity-80">TEMA</span>
+              <span className="note-display note-num text-[22px] font-black leading-none">{currentTopic}</span>
             </span>
           </div>
         </div>
@@ -298,13 +312,14 @@ const WINDOW_VIEWS: Record<LearnWorld, (seed: number) => React.ReactNode> = {
 }
 
 export const OfficeHero: React.FC<HeroProps> = (props) => {
-  const { user, custom, displayName, xpPercent, unlocked, statusSlot, actions, avatarSrc, initials, lessonsDone, lessonsTotal } = props
+  const { user, custom, displayName, progress, topics, currentTopic, currentTopicLabel, statusSlot, actions, avatarSrc, initials, lessonsDone, lessonsTotal } = props
   const chart = Array.from({ length: 9 }).map((_, i) => {
     const x = 492 + i * 18
-    const y = 262 - Math.min(68, 10 + i * 5 + ((i * 37) % 13) + (xpPercent / 100) * 18 * (i / 8))
+    const y = 262 - Math.min(68, 10 + i * 5 + ((i * 37) % 13) + (progress / 100) * 18 * (i / 8))
     return `${i === 0 ? 'M' : 'L'}${x} ${y.toFixed(1)}`
   })
-  const trophies = Array.from({ length: 6 })
+  const topicsDone = topics.filter((topic) => topic.done === topic.total).length
+  const BINDER_COLORS = ['#2e86ab', '#e4572e', '#7a9e3d', '#8a5cf6', '#f2a541', '#c0397a']
   return (
     <section
       className="relative overflow-hidden rounded-[28px] border border-[var(--rule)] bg-[var(--surface)]"
@@ -333,29 +348,30 @@ export const OfficeHero: React.FC<HeroProps> = (props) => {
         <rect x="30" y="36" width="480" height="234" rx="14" fill="var(--surface)" stroke="var(--rule)" strokeWidth="2" />
         <g clipPath="url(#pl-window)">
           <rect x="40" y="46" width="460" height="214" fill="url(#pl-sky)" />
-          {WINDOW_VIEWS[custom.learnWorld](user.level)}
+          {WINDOW_VIEWS[custom.learnWorld](currentTopic)}
         </g>
         <line x1="270" y1="46" x2="270" y2="260" stroke="var(--surface)" strokeWidth="6" />
         <line x1="40" y1="150" x2="500" y2="150" stroke="var(--surface)" strokeWidth="6" />
         <rect x="24" y="266" width="492" height="12" rx="4" fill="var(--surface)" stroke="var(--rule)" />
 
         <rect x="560" y="146" width="320" height="10" rx="3" fill="#8a5a3b" />
-        {trophies.map((_, i) => {
-          const item = unlocked[i]
-          const x = 584 + i * 50
-          return item ? (
-            <g key={i}>
-              <path d={`M${x - 14} ${108} h28 v10 a14 14 0 0 1 -28 0 Z`} fill="#E3A92F" />
-              <rect x={x - 3} y={130} width="6" height="8" fill="#c08a1e" />
-              <rect x={x - 10} y={138} width="20" height="8" rx="2" fill="#7a5230" />
-              <circle cx={x} cy={116} r="4" fill="#fff6c2" />
+        {topics.map((topic, i) => {
+          const x = 572 + i * 50
+          const isDone = topic.done === topic.total
+          const fill = Math.round((topic.done / topic.total) * 52)
+          return (
+            <g key={topic.number}>
+              <rect x={x} y={94} width="34" height="52" rx="4" fill={isDone ? BINDER_COLORS[i] : 'var(--surface)'} stroke={isDone ? 'none' : 'var(--rule)'} strokeDasharray={isDone ? undefined : '4 4'} />
+              {!isDone && topic.done > 0 && <rect x={x} y={146 - fill} width="34" height={fill} rx="4" fill={BINDER_COLORS[i]} opacity="0.55" />}
+              <rect x={x + 8} y={104} width="18" height="10" rx="2" fill={isDone ? 'rgba(255,255,255,.85)' : 'var(--paper-2)'} />
+              <text x={x + 17} y={138} textAnchor="middle" fontSize="13" fontWeight="900" fill={isDone ? '#fff' : 'var(--text-muted)'} style={{ fontFamily: 'var(--font-display)' }}>
+                {topic.number}
+              </text>
             </g>
-          ) : (
-            <rect key={i} x={x - 13} y={112} width="26" height="34" rx="6" fill="none" stroke="var(--rule)" strokeDasharray="4 4" />
           )
         })}
         <text x="720" y="180" textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text-muted)" style={{ fontFamily: 'var(--font-display)' }}>
-          {unlocked.length} TROFEOS
+          {topicsDone} DE {topics.length} TEMAS
         </text>
 
         <rect x="946" y="58" width="164" height="190" rx="8" fill="#7a5230" />
@@ -369,7 +385,7 @@ export const OfficeHero: React.FC<HeroProps> = (props) => {
         )}
         <rect x="976" y="220" width="104" height="20" rx="4" fill="#E3A92F" />
         <text x="1028" y="234.5" textAnchor="middle" fontSize="11" fontWeight="800" fill="#3d2a10" style={{ fontFamily: 'var(--font-display)' }}>
-          NIVEL {user.level}
+          TEMA {currentTopic}
         </text>
 
         <g>
@@ -377,7 +393,7 @@ export const OfficeHero: React.FC<HeroProps> = (props) => {
           <rect x="478" y="194" width="174" height="96" rx="5" fill="#0c1118" />
           <path d={chart.join(' ')} fill="none" stroke="var(--primary)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" pathLength={1} className="pl-draw" />
           <text x="488" y="212" fontSize="11" fontWeight="700" fill="#8fa3bd" style={{ fontFamily: 'var(--font-display)' }}>
-            XP {user.xp}
+            AVANCE {progress}%
           </text>
           <rect x="556" y="298" width="18" height="18" fill="#2a2f3a" />
         </g>
@@ -385,10 +401,10 @@ export const OfficeHero: React.FC<HeroProps> = (props) => {
           <rect x="676" y="200" width="160" height="98" rx="10" fill="#141a22" />
           <rect x="684" y="208" width="144" height="82" rx="5" fill="#0c1118" />
           <text x="756" y="246" textAnchor="middle" fontSize="28" fontWeight="900" fill="#ffd66b" style={{ fontFamily: 'var(--font-display)' }}>
-            {user.coins}
+            {lessonsDone}/{lessonsTotal}
           </text>
           <text x="756" y="268" textAnchor="middle" fontSize="11" fontWeight="700" fill="#8fa3bd">
-            MONEDAS KOR
+            LECCIONES
           </text>
           <rect x="748" y="298" width="16" height="18" fill="#2a2f3a" />
         </g>
@@ -396,10 +412,10 @@ export const OfficeHero: React.FC<HeroProps> = (props) => {
           <rect x="852" y="222" width="96" height="76" rx="8" fill="#141a22" />
           <rect x="858" y="228" width="84" height="62" rx="4" fill="#0c1118" />
           <text x="900" y="258" textAnchor="middle" fontSize="20" fontWeight="900" fill="#ff8a5c" style={{ fontFamily: 'var(--font-display)' }}>
-            {user.streak}d
+            {topicsDone}/{topics.length}
           </text>
           <text x="900" y="278" textAnchor="middle" fontSize="10" fontWeight="700" fill="#8fa3bd">
-            RACHA
+            TEMAS
           </text>
           <rect x="893" y="298" width="14" height="18" fill="#2a2f3a" />
         </g>
@@ -433,7 +449,7 @@ export const OfficeHero: React.FC<HeroProps> = (props) => {
             LECCIONES {lessonsDone}/{lessonsTotal}
           </text>
           {Array.from({ length: lessonsTotal }).map((_, i) => (
-            <rect key={i} x={40 + i * 30} y="382" width="24" height="10" rx="3" fill={i < lessonsDone ? 'var(--ink)' : 'var(--rule)'} />
+            <rect key={i} x={40 + i * 15} y="382" width="11" height="10" rx="3" fill={i < lessonsDone ? 'var(--ink)' : 'var(--rule)'} />
           ))}
         </g>
       </svg>
@@ -446,7 +462,7 @@ export const OfficeHero: React.FC<HeroProps> = (props) => {
           <FitText as="h1" className={`note-display font-black leading-[0.98] text-[var(--text)] [overflow-wrap:break-word] [text-wrap:balance] ${nameSizeClass(displayName, 'lg')}`}>{displayName}</FitText>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[14px] text-[var(--text-muted)] sm:justify-start">
             <span className="font-semibold text-[var(--text)]">@{user.username}</span>
-            <span>{user.levelLabel}</span>
+            <span>{currentTopicLabel}</span>
             <span>Desde {memberSince(user.createdAt)}</span>
           </div>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -461,15 +477,16 @@ export const OfficeHero: React.FC<HeroProps> = (props) => {
 }
 
 const RARITIES = [
-  { min: 10, label: 'Legendaria', colors: ['#f6c453', '#e2771f', '#fff1b8'] },
-  { min: 6, label: 'Épica', colors: ['#a855f7', '#ec4899', '#f5d0fe'] },
-  { min: 3, label: 'Rara', colors: ['#38bdf8', '#6366f1', '#dbeafe'] },
+  { min: 100, label: 'Legendaria', colors: ['#f6c453', '#e2771f', '#fff1b8'] },
+  { min: 60, label: 'Épica', colors: ['#a855f7', '#ec4899', '#f5d0fe'] },
+  { min: 25, label: 'Rara', colors: ['#38bdf8', '#6366f1', '#dbeafe'] },
   { min: 0, label: 'Común', colors: ['#94a3b8', '#475569', '#f1f5f9'] },
 ]
 
 export const CardHero: React.FC<HeroProps> = (props) => {
-  const { user, custom, displayName, folio, unlocked, pinned, xpPercent, statusSlot, actions, avatarSrc, initials, lessonsDone } = props
-  const rarity = RARITIES.find((item) => user.level >= item.min) || RARITIES[RARITIES.length - 1]
+  const { user, custom, displayName, folio, progress, topics, currentTopic, currentTopicLabel, statusSlot, actions, avatarSrc, initials, lessonsDone, lessonsTotal } = props
+  const rarity = RARITIES.find((item) => progress >= item.min) || RARITIES[RARITIES.length - 1]
+  const topicsDone = topics.filter((topic) => topic.done === topic.total).length
   const cardRef = useRef<HTMLDivElement>(null)
 
   const onMove = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -494,10 +511,10 @@ export const CardHero: React.FC<HeroProps> = (props) => {
   }
 
   const lines = [
-    { icon: 'fa-solid fa-coins', label: 'Kor', value: user.coins },
-    { icon: 'fa-solid fa-fire', label: 'Racha', value: `${user.streak}d` },
-    { icon: 'fa-solid fa-trophy', label: 'Logros', value: unlocked.length },
-    { icon: 'fa-solid fa-road', label: 'Lecciones', value: lessonsDone },
+    { icon: 'fa-solid fa-road', label: 'Lecciones', value: `${lessonsDone}/${lessonsTotal}` },
+    { icon: 'fa-solid fa-layer-group', label: 'Temas', value: `${topicsDone}/${topics.length}` },
+    { icon: 'fa-solid fa-chart-pie', label: 'Avance', value: `${progress}%` },
+    { icon: 'fa-solid fa-location-dot', label: 'Tema actual', value: currentTopic },
   ]
 
   return (
@@ -516,7 +533,7 @@ export const CardHero: React.FC<HeroProps> = (props) => {
             <div className="relative flex h-full flex-col overflow-hidden rounded-[17px] bg-[#0e1420] p-3 text-white">
               <div className="flex items-center justify-between">
                 <span className="note-display truncate text-[17px] font-black">{displayName}</span>
-                <span className="note-num rounded-full bg-white/15 px-2 py-0.5 text-[12px] font-bold">NV {user.level}</span>
+                <span className="note-num rounded-full bg-white/15 px-2 py-0.5 text-[12px] font-bold">T{currentTopic}</span>
               </div>
               <div className="relative mt-2 h-[44%] overflow-hidden rounded-xl border-2" style={{ borderColor: rarity.colors[2] }}>
                 <ProfileCover custom={custom} cover={user.cover} className="absolute inset-0 h-full" />
@@ -527,7 +544,7 @@ export const CardHero: React.FC<HeroProps> = (props) => {
                 </div>
               </div>
               <div className="mt-2 flex items-center justify-between rounded-md bg-white/10 px-2 py-1 text-[11px] font-semibold">
-                <span>Inversionista · {user.levelLabel}</span>
+                <span className="truncate">Inversionista · Tema {currentTopic}</span>
                 <span className="flex items-center gap-1" style={{ color: rarity.colors[2] }}>
                   <i className="fa-solid fa-star text-[9px]"></i>
                   {rarity.label}
@@ -543,7 +560,7 @@ export const CardHero: React.FC<HeroProps> = (props) => {
                 ))}
               </div>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/15">
-                <div className="h-full rounded-full" style={{ width: `${xpPercent}%`, background: rarity.colors[0] }}></div>
+                <div className="h-full rounded-full" style={{ width: `${progress}%`, background: rarity.colors[0] }}></div>
               </div>
               <div className="mt-1.5 flex items-center justify-between text-[10px] opacity-70">
                 <span className="note-num">#{folio}</span>
@@ -562,7 +579,7 @@ export const CardHero: React.FC<HeroProps> = (props) => {
           <FitText as="h1" className={`note-display mt-2 font-black leading-[0.98] text-[var(--text)] [overflow-wrap:break-word] [text-wrap:balance] ${nameSizeClass(displayName)}`}>{displayName}</FitText>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[14px] text-[var(--text-muted)] @2xl:justify-start">
             <span className="font-semibold text-[var(--text)]">@{user.username}</span>
-            <span>{user.levelLabel}</span>
+            <span>{currentTopicLabel}</span>
             <span>Desde {memberSince(user.createdAt)}</span>
           </div>
           <div className="mt-4 flex flex-col items-center gap-2 @2xl:items-start">
@@ -571,8 +588,8 @@ export const CardHero: React.FC<HeroProps> = (props) => {
           </div>
           <div className="mt-6 flex flex-wrap justify-center gap-2 @2xl:justify-start">{actions}</div>
           <div className="mt-7 flex items-center justify-center gap-3 @2xl:justify-start">
-            <span className="note-wide text-[10px] font-bold text-[var(--text-muted)]">VITRINA</span>
-            <PinnedStamps pinned={pinned} />
+            <span className="note-wide text-[10px] font-bold text-[var(--text-muted)]">TEMAS</span>
+            <TopicPips topics={topics} />
           </div>
         </div>
       </div>

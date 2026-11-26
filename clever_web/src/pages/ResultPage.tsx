@@ -4,6 +4,7 @@ import { usePlatform } from '../context/PlatformContext'
 import { CATEGORIES, MODULES_BY_CATEGORY } from '../data/catalog'
 import type { DiagnosticResult } from '../types/platform'
 import FitText from '../components/FitText'
+import { COURSE_LESSONS } from '../data/course'
 
 export const ResultPage: React.FC = () => {
   const { user, isGuest } = usePlatform()
@@ -33,7 +34,7 @@ export const ResultPage: React.FC = () => {
   }
 
   const catObj = CATEGORIES.find((c) => c.id === result?.category) || CATEGORIES[0]
-  const modules = MODULES_BY_CATEGORY[result.category] || []
+  const modules = result.category === 'trading' ? COURSE_LESSONS.slice(0, 4).map((lesson) => `${lesson.id} ${lesson.title}`) : MODULES_BY_CATEGORY[result.category] || []
 
   return (
     <div className="max-w-2xl mx-auto py-8 space-y-8">
@@ -109,13 +110,13 @@ export const ResultPage: React.FC = () => {
             to="/aprender"
             className="platform-btn-primary py-2 px-4 text-xs font-semibold"
           >
-            Ir a módulos de aprendizaje
+            Ir a mis lecciones
           </Link>
           <Link
-            to="/exchange"
+            to="/progreso"
             className="platform-btn-secondary py-2 px-4 text-xs font-semibold"
           >
-            Abrir mercado spot
+            Ver mi progreso
           </Link>
         </div>
       )}

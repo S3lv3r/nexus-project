@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { usePlatform } from '../context/PlatformContext'
-import { MISSIONS_BY_CATEGORY, MODULES_BY_CATEGORY } from '../data/catalog'
+import { COURSE_LESSONS, COURSE_SHORT_NAME, COURSE_TOPICS, TOTAL_LESSONS, TOTAL_TOPICS, getCourseProgress, lessonPath } from '../data/course'
 import { CleverkorMascot3D } from '../components/CleverkorMascot3D'
 import { DraggableMascot, type MascotSide } from '../components/DraggableMascot'
 import { Microtext, NOTE_STYLES, ROSETTE_A, ROSETTE_B, Rosette, SmallRosette, WaveField } from '../components/note/NoteKit'
@@ -27,74 +27,37 @@ const LESSON_DARK_VARS = {
 
 const isSceneBg = (bg: HomeLessonBg): bg is 'aurora' | 'stars' | 'candles' | 'waves' | 'skyline' => ['aurora', 'stars', 'candles', 'waves', 'skyline'].includes(bg)
 
-const TRADING_MODULES: string[] = MODULES_BY_CATEGORY.trading
-
 const lessonTitleSize = (title: string) => {
   const longest = Math.max(0, ...(title || '').split(/\s+/).map((word) => word.length))
+  if ((title || '').length > 48) return 'max-w-[28ch] text-[26px] sm:text-[2.2rem]'
   if (longest > 16) return 'max-w-full text-[22px] sm:text-[2rem]'
   if (longest > 12) return 'max-w-[22ch] text-2xl sm:text-[2.2rem]'
   return 'max-w-[18ch] text-3xl sm:text-[2.6rem]'
 }
 
 const STEPS = [
-  { icon: 'fa-solid fa-clipboard-question', title: 'Diagnóstico', text: 'Un examen corto detecta desde dónde empiezas.' },
-  { icon: 'fa-solid fa-route', title: 'Tu ruta', text: 'Lecciones ordenadas según tu nivel, una a la vez.' },
-  { icon: 'fa-solid fa-chart-line', title: 'Práctica real', text: 'Operas en el exchange spot simulado sin arriesgar dinero.' },
-  { icon: 'fa-solid fa-medal', title: 'Sube de nivel', text: 'Ganas XP, monedas y rachas con cada misión diaria.' },
+  { icon: 'fa-solid fa-user-plus', title: 'Crea tu cuenta', text: 'Es gratis y guarda tu avance lección por lección.' },
+  { icon: 'fa-solid fa-route', title: 'Sigue tu camino', text: 'Seis temas en orden, de lo esencial a lo avanzado.' },
+  { icon: 'fa-solid fa-book-open-reader', title: 'Estudia con ejemplos', text: 'Cada lección trae conceptos, casos con números reales y tablas de apoyo.' },
+  { icon: 'fa-solid fa-pen-ruler', title: 'Ponlo en práctica', text: 'Cierra cada lección con actividades para aplicar lo aprendido.' },
 ]
 
+const LEVEL_STEPS = ['Principiante', 'Intermedio', 'Avanzado']
+
+const topicLevels = (topicIndex: number) => {
+  const found = new Set<string>()
+  COURSE_LESSONS.filter((lesson) => lesson.topicIndex === topicIndex).forEach((lesson) =>
+    lesson.level.split('·').forEach((level) => found.add(level.trim())),
+  )
+  const ordered = LEVEL_STEPS.filter((level) => found.has(level))
+  if (ordered.length <= 1) return ordered[0] || ''
+  return `${ordered[0]} a ${ordered[ordered.length - 1]}`
+}
+
+const FIRST_LESSON = COURSE_LESSONS[0]
 
 
 
-const STEP_X = 40
-const CLOSES = [112, 98, 104, 84, 92, 70, 78, 58, 72, 96]
-const WICKS = [8, 12, 7, 10, 9, 12, 8, 11, 7, 10]
-const VOLUME = [14, 22, 12, 26, 16, 30, 18, 28, 20, 24]
-
-const CANDLES = CLOSES.map((close, i) => {
-  const open = CLOSES[(i + CLOSES.length - 1) % CLOSES.length]
-  const top = Math.min(open, close)
-  return { x: 20 + i * STEP_X, top, height: Math.max(Math.max(open, close) - top, 6), wick: WICKS[i], up: close < open }
-})
-
-const PRICE_LINE = (() => {
-  const pts = [...CLOSES, CLOSES[0]].map((y, i) => ({ x: 20 + i * STEP_X, y }))
-  let d = `M${pts[0].x} ${pts[0].y}`
-  for (let i = 1; i < pts.length - 1; i++) {
-    const mx = (pts[i].x + pts[i + 1].x) / 2
-    const my = (pts[i].y + pts[i + 1].y) / 2
-    d += ` Q${pts[i].x} ${pts[i].y} ${mx} ${my}`
-  }
-  d += ` L${pts[pts.length - 1].x} ${pts[pts.length - 1].y}`
-  return d
-})()
-
-const ChartTile: React.FC<{ dx: number }> = ({ dx }) => (
-  <g transform={`translate(${dx} 0)`}>
-    {CANDLES.map((c, i) => (
-      <rect key={`v${i}`} x={c.x - 7} y={155 - VOLUME[i]} width="14" height={VOLUME[i]} rx="1.5" fill="var(--ink)" fillOpacity="0.14" />
-    ))}
-    {CANDLES.map((c) => (
-      <g key={c.x}>
-        <line x1={c.x} x2={c.x} y1={c.top - c.wick} y2={c.top + c.height + c.wick} stroke={c.up ? 'var(--ink)' : 'var(--ink-3)'} strokeWidth="1.6" />
-        <rect x={c.x - 6} y={c.top} width="12" height={c.height} rx="1.5" fill={c.up ? 'var(--ink)' : 'var(--ink-3)'} fillOpacity={c.up ? 0.85 : 0.75} />
-      </g>
-    ))}
-    <path d={PRICE_LINE} fill="none" stroke="var(--ink-2)" strokeWidth="2" strokeLinecap="round" strokeDasharray="1 5" />
-  </g>
-)
-
-const ExchangeChart: React.FC = () => (
-  <svg className="h-full w-full" viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    {[40, 80, 120].map((y) => (
-      <line key={y} x1="0" x2="400" y1={y} y2={y} stroke="var(--rule)" strokeWidth="0.8" />
-    ))}
-    <g className="note-scroll">
-      <ChartTile dx={0} />
-      <ChartTile dx={400} />
-    </g>
-  </svg>
-)
 
 const SectionHeading: React.FC<{ title: string; text?: string; action?: React.ReactNode }> = ({ title, text, action }) => (
   <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[var(--rule)] pb-5">
@@ -127,12 +90,12 @@ const HeroBill: React.FC<{ onWave: () => void; wave: number }> = ({ onWave, wave
           <span className="note-num text-sm font-medium text-[var(--text-muted)]">Serie TF · 000001</span>
         </div>
 
-        <h1 className="note-display mt-10 max-w-[15ch] pr-16 sm:pr-0 text-[clamp(2.6rem,5vw,4.6rem)] font-black leading-[0.98] [font-stretch:100%] text-[var(--text)] [text-wrap:balance]">
-          Aprende trading y finanzas con práctica real.
+        <h1 className="note-display mt-10 max-w-[17ch] pr-16 sm:pr-0 text-[clamp(2.4rem,4.4vw,4.1rem)] font-black leading-[0.98] [font-stretch:100%] text-[var(--text)] [text-wrap:balance]">
+          Aprende trading, blockchain y finanzas digitales.
         </h1>
 
         <p className="mt-6 max-w-[46ch] text-lg leading-relaxed text-[var(--text-muted)] sm:text-xl">
-          Domina el análisis técnico con <strong className="font-semibold text-[var(--text)]">Kor</strong>, evaluaciones adaptativas y operaciones prácticas en el exchange spot con cotizaciones en vivo.
+          Un curso de <strong className="font-semibold text-[var(--text)]">{TOTAL_TOPICS} temas y {TOTAL_LESSONS} lecciones</strong> que va de la inflación y el interés compuesto hasta las finanzas descentralizadas, con <strong className="font-semibold text-[var(--text)]">Kor</strong> a tu lado.
         </p>
 
         <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -140,9 +103,9 @@ const HeroBill: React.FC<{ onWave: () => void; wave: number }> = ({ onWave, wave
             Crear cuenta gratis
             <i className="fa-solid fa-arrow-right text-sm"></i>
           </Link>
-          <Link to="/diagnostico?cat=trading" className="note-btn note-btn-line">
-            Hacer examen diagnóstico
-          </Link>
+          <a href="#temario" className="note-btn note-btn-line">
+            Ver el temario
+          </a>
         </div>
 
         <div className="mt-auto flex items-end gap-4 pt-12">
@@ -175,7 +138,7 @@ const HeroBill: React.FC<{ onWave: () => void; wave: number }> = ({ onWave, wave
         </div>
         <div className="mt-4 text-center">
           <div className="note-wide text-xs font-bold text-[var(--ink)]">KOR</div>
-          <div className="text-sm text-[var(--text-muted)]">Tu mentor en cada lección</div>
+          <div className="text-sm text-[var(--text-muted)]">Tu guía en cada lección</div>
         </div>
       </div>
     </div>
@@ -184,28 +147,25 @@ const HeroBill: React.FC<{ onWave: () => void; wave: number }> = ({ onWave, wave
 
 const FirstLessonSection: React.FC = () => (
   <section className="space-y-10">
-    <SectionHeading title="Empieza tu primera lección" text="El camino de Trading y Finanzas está abierto. Entra, recórrelo y da el primer paso." />
-    <Link
-      to="/aprender?cat=trading"
-      className="note-paper note-link group relative isolate grid overflow-hidden rounded-[24px] md:grid-cols-[1fr_auto]"
-    >
+    <SectionHeading title="Empieza por la primera lección" text="El Tema 1 abre el camino. Crea tu cuenta y da el primer paso." />
+    <Link to="/aprender" className="note-paper note-link group relative isolate grid overflow-hidden rounded-[24px] md:grid-cols-[1fr_auto]">
       <SmallRosette className="pointer-events-none absolute -right-16 -top-16 -z-10 h-64 w-64 opacity-60" />
       <div className="flex flex-col gap-6 p-7 sm:flex-row sm:items-center sm:p-9">
         <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[var(--ink)] text-2xl text-[var(--bg)]">
-          <i className="fa-solid fa-chart-line"></i>
+          <i className={COURSE_TOPICS[0].icon}></i>
         </span>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--text-muted)]">
-            <span className="note-wide text-xs font-extrabold text-[var(--ink)]">TRADING Y FINANZAS</span>
+            <span className="note-wide text-xs font-extrabold text-[var(--ink)]">TEMA 1 · {COURSE_TOPICS[0].shortTitle.toUpperCase()}</span>
             <span className="h-px w-8 bg-[var(--rule)]"></span>
-            <span className="note-num">{TRADING_MODULES.length} lecciones</span>
+            <span className="note-num">
+              {FIRST_LESSON.level}
+            </span>
           </div>
           <h3 className="note-display mt-2 text-2xl font-black leading-tight text-[var(--text)] sm:text-3xl">
-            Lección 01 · {TRADING_MODULES[0]}
+            Lección {FIRST_LESSON.id} · {FIRST_LESSON.title}
           </h3>
-          <p className="mt-2 max-w-xl text-base leading-relaxed text-[var(--text-muted)]">
-            Qué es un mercado, cómo funcionan las acciones y por qué se mueve un precio. La base para todo lo que sigue.
-          </p>
+          <p className="mt-2 max-w-xl text-base leading-relaxed text-[var(--text-muted)]">{FIRST_LESSON.description}.</p>
         </div>
       </div>
       <div className="flex items-center gap-4 border-t border-[var(--rule)] p-7 sm:p-9 md:border-l md:border-t-0">
@@ -218,23 +178,65 @@ const FirstLessonSection: React.FC = () => (
   </section>
 )
 
+const CourseFacts: React.FC = () => (
+  <dl className="grid grid-cols-2 border-y border-[var(--rule)] sm:grid-cols-4">
+    {[
+      { value: String(TOTAL_TOPICS), label: 'Temas' },
+      { value: String(TOTAL_LESSONS), label: 'Lecciones' },
+      { value: '100%', label: 'Gratis y a tu ritmo' },
+      { value: '3', label: 'Niveles: principiante, intermedio y avanzado' },
+    ].map((fact, index) => (
+      <div key={fact.label} className={`px-4 py-6 sm:px-6 ${index % 2 === 1 ? 'border-l border-[var(--rule)]' : ''} ${index >= 2 ? 'border-t border-[var(--rule)] sm:border-t-0' : ''} ${index === 2 ? 'sm:border-l' : ''}`}>
+        <dt className="sr-only">{fact.label}</dt>
+        <dd className="note-display note-num text-4xl font-black leading-none text-[var(--ink)] sm:text-5xl">{fact.value}</dd>
+        <dd className="mt-2 text-sm leading-snug text-[var(--text-muted)]">{fact.label}</dd>
+      </div>
+    ))}
+  </dl>
+)
+
 const CurriculumSection: React.FC = () => (
-  <section className="space-y-10">
-    <SectionHeading title="Lo que vas a dominar" text="Un solo camino, de tu primera vela japonesa a operar con disciplina." />
-    <ol className="grid gap-x-12 sm:grid-cols-2">
-      {TRADING_MODULES.map((title, i) => (
-        <li key={title} className="group flex items-baseline gap-5 border-b border-[var(--rule)] py-5">
-          <span className="note-display note-num w-10 shrink-0 text-2xl font-black text-[var(--ink)]">{String(i + 1).padStart(2, '0')}</span>
-          <span className="note-display text-xl font-semibold leading-snug text-[var(--text)] sm:text-[1.35rem]">{title}</span>
-        </li>
-      ))}
+  <section id="temario" data-tour="home-topics" className="scroll-mt-28 space-y-10">
+    <SectionHeading title="Lo que vas a dominar" text="Seis temas en orden. Cada uno se apoya en el anterior, de tu primera vela japonesa a las finanzas descentralizadas." />
+    <CourseFacts />
+    <ol className="grid gap-5 md:grid-cols-2">
+      {COURSE_TOPICS.map((topic, topicIndex) => {
+        return (
+          <li key={topic.number} className="note-card flex flex-col p-6 sm:p-7">
+            <div className="flex items-start gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--ink)] text-lg text-[var(--bg)]">
+                <i className={topic.icon}></i>
+              </span>
+              <div className="min-w-0">
+                <div className="note-wide text-[11px] font-extrabold text-[var(--ink)]">
+                  TEMA {topic.number} &middot; {topicLevels(topicIndex).toUpperCase()}
+                </div>
+                <h3 className="note-display mt-1 text-xl font-black leading-tight text-[var(--text)] sm:text-[1.4rem]">{topic.title}</h3>
+              </div>
+            </div>
+            <p className="mt-4 text-[15px] leading-relaxed text-[var(--text-muted)]">{topic.summary}</p>
+            <ol className="mt-5 flex-1 divide-y divide-[var(--rule)] border-t border-[var(--rule)]">
+              {topic.lessons.map((lesson) => (
+                <li key={lesson.id} className="flex items-baseline gap-3 py-2.5">
+                  <span className="note-num w-8 shrink-0 text-sm font-bold text-[var(--ink)]">{lesson.id}</span>
+                  <span className="min-w-0 flex-1 text-[15px] leading-snug text-[var(--text)]">{lesson.title}</span>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-4 flex items-center justify-between text-sm text-[var(--text-muted)]">
+              <span>{topic.lessons.length} lecciones</span>
+              <span>{topicLevels(topicIndex)}</span>
+            </div>
+          </li>
+        )
+      })}
     </ol>
   </section>
 )
 
 const StepsSection: React.FC = () => (
   <section className="space-y-10">
-    <SectionHeading title="Cómo funciona" text="Cuatro pasos entre tu primera visita y tu primera operación." />
+    <SectionHeading title="Cómo funciona" text="Cuatro pasos entre tu primera visita y tu primer tema terminado." />
     <ol className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
       {STEPS.map((step, i) => (
         <li key={step.title} className="space-y-4">
@@ -257,64 +259,23 @@ const StepsSection: React.FC = () => (
   </section>
 )
 
-const ExchangeShowcase: React.FC<{ includeMentor?: boolean }> = ({ includeMentor = true }) => (
-  <section data-tour="home-tools" className="space-y-10">
-    <SectionHeading title="Herramientas Prácticas" text="Entrena tus decisiones en el exchange spot simulado." />
-    <Link to="/exchange" className={`note-paper note-link group relative isolate grid overflow-hidden rounded-[24px] ${includeMentor ? 'lg:grid-cols-[0.9fr_1.1fr]' : ''}`}>
-      <div className="flex flex-col p-8 sm:p-10">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--ink)] text-[var(--bg)]">
-          <i className="fa-solid fa-chart-line"></i>
-        </span>
-        <h3 className="note-display mt-6 text-3xl font-black text-[var(--text)] sm:text-4xl">Exchange Spot</h3>
-        <p className="mt-3 max-w-md text-lg leading-relaxed text-[var(--text-muted)]">
-          Opera videojuegos reales de IGDB con fondos de portafolio y gráficas de volumen.
-        </p>
-        <span className="note-display mt-8 inline-flex items-center gap-2 text-lg font-bold text-[var(--ink)]">
-          Abrir Exchange Spot
-          <i className="fa-solid fa-arrow-right text-sm transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-1"></i>
-        </span>
-      </div>
-      <div className={`relative min-h-[220px] border-t border-[var(--rule)] bg-[var(--surface)] ${includeMentor ? 'lg:border-l lg:border-t-0' : ''}`}>
-        <ExchangeChart />
-      </div>
-    </Link>
-    {includeMentor && (
-      <Link to="/mentor" className="note-card note-link group flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:p-8">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--rule)] text-[var(--ink)]">
-          <i className="fa-solid fa-robot"></i>
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="note-display block text-xl font-bold text-[var(--text)]">Kor &middot; Mentor IA</span>
-          <span className="mt-1 block text-base leading-relaxed text-[var(--text-muted)]">
-            ¿Dudas sobre soportes, velas o gestión de riesgo? Kor te orienta en cualquier momento.
-          </span>
-        </span>
-        <span className="note-display inline-flex items-center gap-2 text-base font-bold text-[var(--ink)]">
-          Abrir chat con Kor
-          <i className="fa-solid fa-arrow-right text-sm transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-1"></i>
-        </span>
-      </Link>
-    )}
-  </section>
-)
-
 const ClosingNote: React.FC = () => (
   <section className="note-bill relative isolate overflow-hidden rounded-[28px] bg-[var(--ink)] px-8 py-12 text-[var(--bg)] sm:px-14 sm:py-16">
     <svg viewBox="0 0 320 320" className="pointer-events-none absolute -right-24 -top-24 -z-10 h-[460px] w-[460px]" aria-hidden="true">
       <path d={ROSETTE_A} fill="none" stroke="currentColor" strokeWidth="0.6" strokeOpacity="0.35" className="note-rosette" />
     </svg>
     <div className="max-w-2xl">
-      <h2 className="note-display text-4xl font-black leading-[1.02] sm:text-6xl">Tu primera emisión empieza con un diagnóstico.</h2>
+      <h2 className="note-display text-4xl font-black leading-[1.02] sm:text-6xl">Tu primera lección te está esperando.</h2>
       <p className="mt-5 max-w-xl text-lg leading-relaxed opacity-80">
-        Crea tu cuenta, haz el examen y Kor arma tu ruta de Trading y Finanzas desde tu nivel real.
+        Crea tu cuenta gratis y empieza por el Tema 1: {COURSE_TOPICS[0].title.toLowerCase()}.
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
         <Link to="/register" className="note-btn bg-[var(--bg)] text-[var(--ink)] hover:opacity-90">
           Crear cuenta gratis
           <i className="fa-solid fa-arrow-right text-sm"></i>
         </Link>
-        <Link to="/diagnostico?cat=trading" className="note-btn border-[1.5px] border-current/50 text-[var(--bg)] hover:border-current">
-          Hacer examen diagnóstico
+        <Link to="/login" className="note-btn border-[1.5px] border-current/50 text-[var(--bg)] hover:border-current">
+          Ya tengo cuenta
         </Link>
       </div>
     </div>
@@ -322,7 +283,7 @@ const ClosingNote: React.FC = () => (
 )
 
 export const HomePage: React.FC = () => {
-  const { user, isGuest, completeMission } = usePlatform()
+  const { user, isGuest } = usePlatform()
   const [custom] = useProfileCustomization(user.username)
   const [searchParams, setSearchParams] = useSearchParams()
   const requestedStudio = searchParams.get('estudio') as StudioTabId | null
@@ -332,19 +293,12 @@ export const HomePage: React.FC = () => {
   const [heroWave, setHeroWave] = useState(0)
   const rootRef = useRef<HTMLDivElement>(null)
 
-  const mission = MISSIONS_BY_CATEGORY.trading
-  const today = new Date().toDateString()
-  const isMissionDone = user._lastMissionDate === today
-
-  const modulesDone = Math.min(TRADING_MODULES.length, (user.moduleProgress?.trading || []).length)
-  const courseProgress = TRADING_MODULES.length ? Math.round((modulesDone / TRADING_MODULES.length) * 100) : 0
-  const nextLesson: string | undefined = modulesDone < TRADING_MODULES.length ? TRADING_MODULES[modulesDone] : undefined
-  const currentModule = TRADING_MODULES[Math.min(modulesDone, TRADING_MODULES.length - 1)]
+  const course = getCourseProgress(user.moduleProgress)
+  const nextLesson = course.next
 
   const displayName: string = (user as any).username || (user as any).name || 'Usuario'
   const firstName: string = (user.name || displayName).split(' ')[0]
   const avatarUrl: string | undefined = isGuest ? undefined : resolveAvatarSrc(user.avatar, user.username)
-  const xpPct = Math.min(100, (user.xp / user.xpToNext) * 100)
   const folio = String(
     Array.from(displayName).reduce((acc, ch) => (acc * 31 + ch.charCodeAt(0)) % 1000000, 7),
   ).padStart(6, '0')
@@ -357,7 +311,6 @@ export const HomePage: React.FC = () => {
         <FirstLessonSection />
         <CurriculumSection />
         <StepsSection />
-        <ExchangeShowcase />
         <ClosingNote />
       </div>
     )
@@ -386,24 +339,21 @@ export const HomePage: React.FC = () => {
               <i className="fa-solid fa-user text-4xl text-[var(--ink)]"></i>
             )}
           </div>
-          <div className="note-display note-num absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full border-[3px] border-[var(--surface)] bg-[var(--ink)] text-sm font-extrabold text-[var(--bg)]">
-            {user.level}
-          </div>
         </div>
       </div>
 
       <div className="space-y-1.5 px-5 pt-3 text-center">
         <div className="note-display truncate text-2xl font-extrabold text-[var(--text)]">{displayName}</div>
         <span className="inline-block rounded-full border border-[var(--rule)] px-3 py-0.5 text-sm font-medium text-[var(--ink)]">
-          Nivel {user.level} &middot; {user.levelLabel}
+          {course.isDone ? 'Curso completado' : `Tema ${course.currentTopic.number} · ${course.currentTopic.shortTitle}`}
         </span>
       </div>
 
       <div className="mx-5 mt-4 grid grid-cols-3 divide-x divide-[var(--rule)] rounded-2xl border border-[var(--rule)]">
         {[
-          { value: user.streak, label: 'Racha' },
-          { value: user.level, label: 'Nivel' },
-          { value: user.coins, label: 'Monedas' },
+          { value: `${course.done}/${TOTAL_LESSONS}`, label: 'Lecciones' },
+          { value: `${course.topicsDone}/${TOTAL_TOPICS}`, label: 'Temas' },
+          { value: `${course.percent}%`, label: 'Avance' },
         ].map((stat) => (
           <div key={stat.label} className="py-2.5 text-center">
             <div className="note-display note-num text-xl font-extrabold text-[var(--text)]">{stat.value}</div>
@@ -414,13 +364,11 @@ export const HomePage: React.FC = () => {
 
       <div className="space-y-1.5 px-5 pt-4">
         <div className="flex justify-between text-sm text-[var(--text-muted)]">
-          <span>Experiencia</span>
-          <span className="note-num">
-            {user.xp} / {user.xpToNext} XP
-          </span>
+          <span>Avance del curso</span>
+          <span className="note-num">{course.percent}%</span>
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--paper-2)]">
-          <div className="h-full rounded-full bg-[var(--ink)] transition-[width] duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]" style={{ width: `${xpPct}%` }}></div>
+          <div className="h-full rounded-full bg-[var(--ink)] transition-[width] duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]" style={{ width: `${Math.max(course.percent, 2)}%` }}></div>
         </div>
       </div>
 
@@ -444,44 +392,84 @@ export const HomePage: React.FC = () => {
     </div>
   )
 
-  const MissionWidget = (
+  const DetailsWidget = (
     <div className="note-paper relative isolate overflow-hidden rounded-[20px] p-6">
       <SmallRosette className="pointer-events-none absolute -bottom-10 -right-10 -z-10 h-36 w-36 opacity-60" />
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="note-display text-xl font-extrabold text-[var(--text)]">Misión Diaria</h2>
-        <span className="note-display note-num rounded-full border-[1.5px] border-[var(--ink)] px-3 py-0.5 text-sm font-extrabold text-[var(--ink)]">+{mission.xp} XP</span>
-      </div>
-      <p className="mt-3 text-base leading-relaxed text-[var(--text)]">{mission.text}</p>
-      <div className="pt-5">
-        {isMissionDone ? (
-          <div className="flex items-center gap-2 rounded-2xl border border-[var(--success)] bg-[var(--success-bg)] px-4 py-3 text-base font-medium text-[var(--success)]">
-            <i className="fa-solid fa-circle-check"></i>
-            <span>Completada hoy. Vuelve mañana por otra.</span>
-          </div>
-        ) : (
-          <button type="button" onClick={() => completeMission('trading')} className="note-btn note-btn-ink w-full">
-            <i className="fa-solid fa-check text-sm"></i>
-            Marcar como completada
-          </button>
-        )}
+      <div className="note-wide text-[11px] font-extrabold text-[var(--ink)]">FICHA DE LA LECCIÓN {nextLesson.id}</div>
+      <h2 className="note-display mt-2 text-xl font-extrabold leading-snug text-[var(--text)]">Lo que vas a lograr</h2>
+      <p className="mt-2 text-[15px] leading-relaxed text-[var(--text)]">{nextLesson.objective}.</p>
+      <dl className="mt-4 grid grid-cols-2 gap-2">
+        <div className="rounded-2xl border border-[var(--rule)] px-3 py-2">
+          <dt className="text-xs text-[var(--text-muted)]">Tema</dt>
+          <dd className="text-[14px] font-bold leading-tight text-[var(--text)]">{nextLesson.topicShortTitle}</dd>
+        </div>
+        <div className="rounded-2xl border border-[var(--rule)] px-3 py-2">
+          <dt className="text-xs text-[var(--text-muted)]">Nivel</dt>
+          <dd className="text-[14px] font-bold leading-tight text-[var(--text)]">{nextLesson.level}</dd>
+        </div>
+      </dl>
+      <div className="mt-4 flex flex-wrap gap-1.5">
+        {nextLesson.keywords.slice(0, 6).map((keyword) => (
+          <span key={keyword} className="rounded-full border border-[var(--rule)] bg-[var(--surface)] px-2.5 py-1 text-[12.5px] font-medium text-[var(--text)]">
+            {keyword}
+          </span>
+        ))}
       </div>
     </div>
   )
 
-  const MentorWidget = (
-    <Link to="/mentor" className="note-card note-link group block space-y-2 p-5">
-      <h2 className="note-display flex items-center gap-2 text-lg font-extrabold text-[var(--text)]">
-        <i className="fa-solid fa-robot text-sm text-[var(--ink)]"></i>
-        Kor &middot; Mentor IA
-      </h2>
-      <p className="text-[15px] leading-relaxed text-[var(--text-muted)]">
-        ¿Dudas sobre soportes, velas o gestión de riesgo? Kor te orienta en cualquier momento.
-      </p>
-      <span className="note-display inline-flex items-center gap-1.5 pt-1 text-base font-bold text-[var(--ink)]">
-        Abrir chat con Kor
-        <i className="fa-solid fa-arrow-right text-xs transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-1"></i>
-      </span>
-    </Link>
+  const TopicsBlock = (
+    <section data-tour="home-topics" className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[var(--rule)] pb-4">
+        <div>
+          <h2 className="note-display text-3xl font-extrabold leading-tight text-[var(--text)] sm:text-[2.3rem]">Temas del curso</h2>
+          <p className="mt-1 text-base text-[var(--text-muted)]">
+            {course.topicsDone} de {TOTAL_TOPICS} temas terminados &middot; {COURSE_SHORT_NAME}
+          </p>
+        </div>
+        <Link to="/aprender" className="note-display inline-flex items-center gap-1.5 text-base font-bold text-[var(--ink)]">
+          Ver el mapa
+          <i className="fa-solid fa-arrow-right text-xs"></i>
+        </Link>
+      </div>
+      <ol className="grid gap-3 sm:grid-cols-2">
+        {course.topicStats.map(({ topic, done, total }, topicIndex) => {
+          const isCurrent = !course.isDone && topicIndex === course.next.topicIndex
+          const isComplete = done === total
+          return (
+            <li key={topic.number}>
+              <Link
+                to="/aprender"
+                className={`note-card note-link group flex h-full items-center gap-4 p-4 ${isCurrent ? 'ring-2 ring-[var(--ink)]' : ''}`}
+              >
+                <span
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[15px] ${
+                    isComplete || isCurrent ? 'bg-[var(--ink)] text-[var(--bg)]' : 'bg-[var(--paper-2)] text-[var(--ink)]'
+                  }`}
+                >
+                  <i className={isComplete ? 'fa-solid fa-check' : topic.icon}></i>
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="note-wide block text-[10px] font-extrabold text-[var(--ink)]">
+                    TEMA {topic.number}
+                    {isCurrent ? ' · EN CURSO' : ''}
+                  </span>
+                  <span className="note-display block truncate text-[17px] font-bold text-[var(--text)]">{topic.shortTitle}</span>
+                  <span className="mt-1.5 flex items-center gap-2">
+                    <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--paper-2)]">
+                      <span className="block h-full rounded-full bg-[var(--ink)]" style={{ width: `${(done / total) * 100}%` }}></span>
+                    </span>
+                    <span className="note-num shrink-0 text-xs text-[var(--text-muted)]">
+                      {done}/{total}
+                    </span>
+                  </span>
+                </span>
+              </Link>
+            </li>
+          )
+        })}
+      </ol>
+    </section>
   )
 
   const greetingText =
@@ -510,52 +498,64 @@ export const HomePage: React.FC = () => {
         </div>
       )}
       <div className="p-6 pt-10 sm:p-9 sm:pt-12">
-        <div className="flex items-center gap-3">
-          <span className="note-wide text-xs font-extrabold text-[var(--ink)]">TRADING Y FINANZAS</span>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="note-wide text-xs font-extrabold text-[var(--ink)]">
+            TEMA {nextLesson.topicNumber} &middot; {nextLesson.topicShortTitle.toUpperCase()}
+          </span>
           <span className="h-px w-8 bg-[var(--rule)]"></span>
           <span className="note-num text-sm text-[var(--text-muted)]">
-            Módulo {String(Math.min(modulesDone + 1, TRADING_MODULES.length)).padStart(2, '0')} de {String(TRADING_MODULES.length).padStart(2, '0')}
+            Lección {nextLesson.id} &middot; {nextLesson.index + 1} de {TOTAL_LESSONS}
           </span>
         </div>
-        <FitText as="h2" className={`note-display mt-4 font-black leading-[1.02] text-[var(--text)] [overflow-wrap:break-word] [text-wrap:balance] ${lessonTitleSize(nextLesson || currentModule)}`}>
-          {nextLesson || currentModule}
+        <FitText as="h2" className={`note-display mt-4 font-black leading-[1.02] text-[var(--text)] [overflow-wrap:break-word] [text-wrap:balance] ${lessonTitleSize(nextLesson.title)}`}>
+          {nextLesson.title}
         </FitText>
+        <p className="mt-3 max-w-[56ch] text-base leading-relaxed text-[var(--text-muted)]">{nextLesson.description}.</p>
 
-        <div className="mt-7 grid grid-cols-8 gap-1.5" aria-label={`Progreso del curso: ${courseProgress}%`}>
-          {TRADING_MODULES.map((title, i) => (
-            <span
-              key={title}
-              title={title}
-              className={`h-2.5 rounded-full ${i < modulesDone ? 'bg-[var(--ink)]' : i === modulesDone ? 'bg-[color-mix(in_srgb,var(--ink)_45%,transparent)]' : 'bg-[var(--paper-2)]'}`}
-            ></span>
+        <div className="mt-7 flex gap-2" aria-label={`Progreso del curso: ${course.percent}%`}>
+          {COURSE_TOPICS.map((topic, topicIndex) => (
+            <div key={topic.number} className="flex flex-1 gap-[3px]" style={{ flexGrow: topic.lessons.length }}>
+              {COURSE_LESSONS.filter((lesson) => lesson.topicIndex === topicIndex).map((lesson) => (
+                <span
+                  key={lesson.id}
+                  title={`${lesson.id} ${lesson.title}`}
+                  className={`h-2.5 flex-1 rounded-full ${
+                    course.completed.has(lesson.index)
+                      ? 'bg-[var(--ink)]'
+                      : !course.isDone && lesson.index === course.resumeIndex
+                        ? 'bg-[color-mix(in_srgb,var(--ink)_45%,transparent)]'
+                        : 'bg-[var(--paper-2)]'
+                  }`}
+                ></span>
+              ))}
+            </div>
           ))}
         </div>
         <div className="mt-2 flex justify-between text-sm text-[var(--text-muted)]">
           <span>
-            {modulesDone} de {TRADING_MODULES.length} módulos completados
+            {course.done} de {TOTAL_LESSONS} lecciones completadas
           </span>
-          <span className="note-num">{courseProgress}%</span>
+          <span className="note-num">{course.percent}%</span>
         </div>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
-          <Link to="/aprender?cat=trading" className="note-btn note-btn-ink">
+          <Link to={lessonPath(course.resumeIndex)} className="note-btn note-btn-ink">
             <i className="fa-solid fa-play text-sm"></i>
-            Seguir nivel
+            {course.isDone ? 'Repasar lección' : course.done ? 'Seguir lección' : 'Empezar lección'}
           </Link>
-          <Link to="/aprender?cat=trading&view=path" className="note-btn note-btn-line">
+          <Link to="/aprender" className="note-btn note-btn-line">
             Ver camino completo
           </Link>
         </div>
       </div>
     </section>
     ),
-    exchange: <ExchangeShowcase includeMentor={false} />,
+    topics: TopicsBlock,
   }
 
   const sideBlocks: Record<HomeSideSection, React.ReactNode> = {
     credential: ProfileWidget,
-    mission: MissionWidget,
-    mentor: MentorWidget,
+    details: DetailsWidget,
   }
 
   const visibleMain = custom.homeMain.filter((id) => id === 'lesson' || !custom.homeHidden.includes(id))

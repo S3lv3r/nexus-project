@@ -86,7 +86,7 @@ export const WaveField: React.FC<{ className?: string }> = ({ className = '' }) 
   </svg>
 )
 
-const MICROTEXT = 'CLEVER · TRADING Y FINANZAS · APRENDE PRACTICANDO · '.repeat(14)
+const MICROTEXT = 'CLEVER · TRADING · BLOCKCHAIN · FINANZAS DIGITALES · '.repeat(14)
 
 export const Microtext: React.FC<{ className?: string }> = ({ className = '' }) => (
   <div className={`note-wide overflow-hidden whitespace-nowrap text-[7px] font-semibold leading-none text-[var(--ink)] opacity-60 ${className}`} aria-hidden="true">

@@ -87,7 +87,6 @@ export const THEME_OPTIONS: ThemeOption[] = [
     desc: 'Negro, ámbar y verde fósforo',
     accent: null,
     group: 'market',
-    unlock: { price: 150 },
     preview: {
       background: '#050706',
       surface: '#0c100f',
@@ -105,7 +104,6 @@ export const THEME_OPTIONS: ThemeOption[] = [
     desc: 'Mármol crema con oro y serif',
     accent: null,
     group: 'market',
-    unlock: { price: 200 },
     preview: {
       background: '#f4efe4',
       surface: '#fffdf8',
@@ -123,7 +121,6 @@ export const THEME_OPTIONS: ThemeOption[] = [
     desc: 'Noche estrellada verde agua y violeta',
     accent: null,
     group: 'worlds',
-    unlock: { price: 120 },
     preview: {
       background: 'radial-gradient(circle at 12% 0%, rgba(45,212,191,.6), transparent 55%), radial-gradient(circle at 92% 8%, rgba(139,92,246,.65), transparent 55%), #070b1a',
       surface: 'rgba(18,26,52,.85)',
@@ -141,7 +138,6 @@ export const THEME_OPTIONS: ThemeOption[] = [
     desc: 'Cuadrícula rosa y cian, letra ancha',
     accent: null,
     group: 'worlds',
-    unlock: { price: 150 },
     preview: {
       background: 'radial-gradient(circle at 90% 0%, rgba(244,63,94,.6), transparent 55%), radial-gradient(circle at 0% 100%, rgba(34,211,238,.5), transparent 55%), #0d0618',
       surface: 'rgba(32,14,56,.85)',
@@ -159,7 +155,6 @@ export const THEME_OPTIONS: ThemeOption[] = [
     desc: 'Sol retro con franjas y serif cálida',
     accent: null,
     group: 'worlds',
-    unlock: { level: 2 },
     preview: {
       background: 'radial-gradient(circle at 50% 120%, rgba(251,146,60,.8), transparent 55%), radial-gradient(circle at 0% 0%, rgba(236,72,153,.5), transparent 55%), #1a0b12',
       surface: 'rgba(50,20,32,.85)',
@@ -177,7 +172,6 @@ export const THEME_OPTIONS: ThemeOption[] = [
     desc: 'Azul petróleo con oleaje turquesa',
     accent: null,
     group: 'worlds',
-    unlock: { level: 2 },
     preview: {
       background: 'radial-gradient(circle at 0% 0%, rgba(34,211,238,.6), transparent 55%), radial-gradient(circle at 100% 100%, rgba(37,99,235,.6), transparent 55%), #031a24',
       surface: 'rgba(6,42,58,.85)',
@@ -195,7 +189,6 @@ export const THEME_OPTIONS: ThemeOption[] = [
     desc: 'Pétalos rosas, lila y serif suave',
     accent: null,
     group: 'worlds',
-    unlock: { price: 120 },
     preview: {
       background: 'radial-gradient(circle at 0% 0%, rgba(244,114,182,.6), transparent 55%), radial-gradient(circle at 100% 10%, rgba(167,139,250,.6), transparent 55%), #fff5fa',
       surface: 'rgba(255,255,255,.9)',

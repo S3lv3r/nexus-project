@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { usePlatform } from '../context/PlatformContext'
 import { resolveAvatarSrc } from '../data/avatarPresets'
 import { useProfileCustomization } from '../services/profileCustomizationService'
-import type { Asset } from '../types'
+import { COURSE_LESSONS, TOTAL_LESSONS, getCourseProgress, lessonPath } from '../data/course'
 import type { NavStyle } from '../types/profileCustomization'
 import { NOTE_STYLES, WaveField } from './note/NoteKit'
 
@@ -12,6 +12,7 @@ interface NavItem {
   label: string
   shortLabel: string
   icon: string
+  locked?: boolean
 }
 
 interface MoreItem {
@@ -24,8 +25,7 @@ interface MoreItem {
 const MAIN_ITEMS: NavItem[] = [
   { to: '/', label: 'Inicio', shortLabel: 'Inicio', icon: 'fa-solid fa-house' },
   { to: '/aprender', label: 'Aprender', shortLabel: 'Aprender', icon: 'fa-solid fa-road' },
-  { to: '/analisis', label: 'Análisis Técnico', shortLabel: 'Análisis', icon: 'fa-solid fa-magnifying-glass-chart' },
-  { to: '/mentor', label: 'Mentor IA', shortLabel: 'Mentor', icon: 'fa-solid fa-robot' },
+  { to: '/analisis', label: 'Análisis Técnico', shortLabel: 'Análisis', icon: 'fa-solid fa-magnifying-glass-chart', locked: true },
 ]
 
 const MORE_ITEMS: MoreItem[] = [
@@ -36,14 +36,13 @@ const PROFILE_ITEMS: MoreItem[] = [
   { to: '/perfil', label: 'Perfil', description: '', icon: 'fa-solid fa-user' },
   { to: '/perfil?estudio=diseno', label: 'Personalizar', description: '', icon: 'fa-solid fa-wand-magic-sparkles' },
   { to: '/progreso', label: 'Mi Progreso', description: '', icon: 'fa-solid fa-chart-pie' },
-  { to: '/portfolio', label: 'Portafolio', description: '', icon: 'fa-solid fa-wallet' },
   { to: '/configuracion', label: 'Configuración', description: '', icon: 'fa-solid fa-gear' },
 ]
 
 const ISLAND_MAX = 1240
 const ISLAND_SCROLLED_MIN = 1000
 
-const NAV_MICROTEXT = 'CLEVER · TRADING Y FINANZAS · APRENDE PRACTICANDO · SERIE KOR · '.repeat(10)
+const NAV_MICROTEXT = 'CLEVER · TRADING · BLOCKCHAIN · FINANZAS DIGITALES · SERIE KOR · '.repeat(10)
 
 const NAV_STYLES = `
 .nav-shell{--coin:#d99a1e}
@@ -89,47 +88,6 @@ const NAV_STYLES = `
 }
 `
 
-const usePrefersReducedMotion = () => {
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReduced(media.matches)
-    const onChange = () => setReduced(media.matches)
-    media.addEventListener('change', onChange)
-    return () => media.removeEventListener('change', onChange)
-  }, [])
-  return reduced
-}
-
-const useCountUp = (value: number, reduced: boolean) => {
-  const [display, setDisplay] = useState(value)
-  const [pulse, setPulse] = useState({ key: 0, delta: 0 })
-  const previous = useRef(value)
-
-  useEffect(() => {
-    const start = previous.current
-    if (start === value) return
-    previous.current = value
-    setPulse((current) => ({ key: current.key + 1, delta: value - start }))
-    if (reduced) {
-      setDisplay(value)
-      return
-    }
-    const startedAt = performance.now()
-    let frame = 0
-    const tick = (now: number) => {
-      const progress = Math.min(1, (now - startedAt) / 750)
-      const eased = 1 - Math.pow(1 - progress, 4)
-      setDisplay(Math.round(start + (value - start) * eased))
-      if (progress < 1) frame = requestAnimationFrame(tick)
-    }
-    frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
-  }, [value, reduced])
-
-  return { display, pulse }
-}
-
 const useDismiss = (isOpen: boolean, close: () => void, ref: React.RefObject<HTMLElement | null>) => {
   useEffect(() => {
     if (!isOpen) return
@@ -149,48 +107,6 @@ const useDismiss = (isOpen: boolean, close: () => void, ref: React.RefObject<HTM
 }
 
 const matchesPath = (pathname: string, to: string) => (to === '/' ? pathname === '/' : pathname === to || pathname.startsWith(`${to}/`))
-
-const StatChip: React.FC<{
-  icon: string
-  value: number
-  prefix?: string
-  suffix?: string
-  color: string
-  label: string
-  reduced: boolean
-  iconClassName?: string
-  progress?: number
-  compact?: boolean
-}> = ({ icon, value, prefix = '', suffix = '', color, label, reduced, iconClassName = '', progress, compact = false }) => {
-  const { display, pulse } = useCountUp(value, reduced)
-  return (
-    <span
-      className={`relative inline-flex h-8 shrink-0 items-center gap-1.5 overflow-visible rounded-full border ${compact ? 'px-2' : 'px-2.5'}`}
-      style={{ borderColor: `color-mix(in srgb, ${color} 32%, var(--border))`, background: `color-mix(in srgb, ${color} 9%, var(--surface))` }}
-      aria-label={`${label}: ${prefix}${value}${suffix}`}
-      title={label}
-    >
-      <span key={pulse.key} className={`inline-flex items-center gap-1.5 ${pulse.key ? 'nav-bump' : ''}`} aria-hidden="true">
-        <i className={`${icon} text-[12px] ${iconClassName}`} style={{ color }}></i>
-        <span className="nav-font note-num text-[13px] font-bold leading-none text-[var(--text)]">
-          {prefix}
-          {display}
-          {suffix}
-        </span>
-      </span>
-      {progress !== undefined && !compact && (
-        <span className="hidden h-1 w-9 overflow-hidden rounded-full lg:block" style={{ background: `color-mix(in srgb, ${color} 18%, transparent)` }} aria-hidden="true">
-          <span className="nav-xp block h-full rounded-full" style={{ width: `${Math.round(progress * 100)}%`, background: color }}></span>
-        </span>
-      )}
-      {pulse.key > 0 && pulse.delta > 0 && (
-        <span key={`delta-${pulse.key}`} className="nav-delta nav-font pointer-events-none absolute left-1/2 top-0 text-[11px] font-extrabold" style={{ color }} aria-hidden="true">
-          +{pulse.delta}
-        </span>
-      )}
-    </span>
-  )
-}
 
 const Avatar: React.FC<{ src: string; initials: string; progress: number; size?: number }> = ({ src, initials, progress, size = 36 }) => (
   <span
@@ -220,64 +136,38 @@ const LogoMark: React.FC<{ compact?: boolean }> = ({ compact = false }) => (
   </Link>
 )
 
-const formatPrice = (value: number) => (value >= 1000 ? value.toLocaleString('es-MX', { maximumFractionDigits: 0 }) : value.toLocaleString('es-MX', { maximumFractionDigits: 2 }))
+type TickerLesson = (typeof COURSE_LESSONS)[number]
 
-const TickerStrip: React.FC<{ assets: Asset[]; fallback: { icon: string; label: string; value: string; to: string }[] }> = ({ assets, fallback }) => {
-  const items = assets
-    .filter((asset) => Number.isFinite(asset.current_price))
-    .slice()
-    .sort((a, b) => Math.abs(b.change_24h) - Math.abs(a.change_24h))
-    .slice(0, 24)
-  if (items.length === 0) {
-    const fallbackRow = (copy: number) => (
-      <span className="flex shrink-0 items-center" aria-hidden={copy > 0}>
-        {fallback.map((item) => (
-          <Link key={`${copy}-${item.label}`} to={item.to} tabIndex={copy > 0 ? -1 : undefined} className="flex items-center gap-2 border-r border-[var(--rule)] px-4 text-[12px] hover:bg-[var(--paper)]">
-            <i className={`${item.icon} text-[11px] text-[var(--ink)]`}></i>
-            <span className="nav-font font-bold text-[var(--text)]">{item.label}</span>
-            <span className="note-num text-[var(--text-muted)]">{item.value}</span>
-          </Link>
-        ))}
-      </span>
-    )
-    return (
-      <div className="nav-ticker-wrap relative flex h-8 items-stretch overflow-hidden border-t border-[var(--rule)] bg-[var(--paper)]" aria-label="Resumen de tu cuenta">
-        <span className="note-wide relative z-10 flex shrink-0 items-center gap-1.5 bg-[var(--ink-3)] px-3 text-[9px] font-bold text-[var(--bg)]" title="El exchange no respondió. Se muestran tus datos de Clever.">
-          <i className="fa-solid fa-plug-circle-xmark text-[10px]"></i>
-          SIN MERCADO
-        </span>
-        <div className="nav-ticker flex w-max items-stretch" style={{ ['--ticker-dur' as string]: '40s' } as React.CSSProperties}>
-          {fallbackRow(0)}
-          {fallbackRow(1)}
-          {fallbackRow(2)}
-        </div>
-      </div>
-    )
-  }
+const TickerStrip: React.FC<{ completed: Set<number>; resumeIndex: number }> = ({ completed, resumeIndex }) => {
+  const statusIcon = (lesson: TickerLesson) =>
+    completed.has(lesson.index) ? 'fa-solid fa-circle-check' : lesson.index === resumeIndex ? 'fa-solid fa-circle-play' : 'fa-solid fa-lock'
   const row = (copy: number) => (
     <span className="flex shrink-0 items-center" aria-hidden={copy > 0}>
-      {items.map((asset) => {
-        const isUp = asset.change_24h >= 0
+      {COURSE_LESSONS.map((lesson) => {
+        const isOpen = completed.has(lesson.index) || lesson.index === resumeIndex
+        const isCurrent = lesson.index === resumeIndex
         return (
-          <Link key={`${copy}-${asset.id}`} to="/exchange" tabIndex={copy > 0 ? -1 : undefined} className="flex items-center gap-2 border-r border-[var(--rule)] px-4 text-[12px] hover:bg-[var(--paper)]">
-            <span className="nav-font max-w-[150px] truncate font-bold text-[var(--text)]">{asset.name}</span>
-            <span className="note-num text-[var(--text-muted)]">${formatPrice(asset.current_price)}</span>
-            <span className="note-num flex items-center gap-1 font-bold" style={{ color: isUp ? 'var(--success)' : 'var(--danger)' }}>
-              <i className={`fa-solid ${isUp ? 'fa-caret-up' : 'fa-caret-down'} text-[10px]`}></i>
-              {Math.abs(asset.change_24h).toFixed(2)}%
-            </span>
+          <Link
+            key={`${copy}-${lesson.id}`}
+            to={isOpen ? lessonPath(lesson.index) : '/aprender'}
+            tabIndex={copy > 0 ? -1 : undefined}
+            className="flex items-center gap-2 border-r border-[var(--rule)] px-4 text-[12px] hover:bg-[var(--paper)]"
+          >
+            <i className={`${statusIcon(lesson)} text-[11px] ${isOpen ? 'text-[var(--ink)]' : 'text-[var(--text-dim)]'}`}></i>
+            <span className="note-num font-bold text-[var(--ink)]">{lesson.id}</span>
+            <span className={`nav-font max-w-[260px] truncate font-semibold ${isCurrent ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}`}>{lesson.title}</span>
           </Link>
         )
       })}
     </span>
   )
   return (
-    <div className="nav-ticker-wrap relative flex h-8 items-stretch overflow-hidden border-t border-[var(--rule)] bg-[var(--paper)]" aria-label="Precios del exchange">
+    <div className="nav-ticker-wrap relative flex h-8 items-stretch overflow-hidden border-t border-[var(--rule)] bg-[var(--paper)]" aria-label="Lecciones del curso">
       <span className="note-wide relative z-10 flex shrink-0 items-center gap-1.5 bg-[var(--ink)] px-3 text-[9px] font-bold text-[var(--bg)]">
-        <span className="h-1.5 w-1.5 rounded-full bg-[var(--bg)]"></span>
-        EN VIVO
+        <i className="fa-solid fa-road text-[10px]"></i>
+        {completed.size}/{TOTAL_LESSONS}
       </span>
-      <div className="nav-ticker flex w-max items-stretch" style={{ ['--ticker-dur' as string]: `${Math.max(30, items.length * 5)}s` } as React.CSSProperties}>
+      <div className="nav-ticker flex w-max items-stretch" style={{ ['--ticker-dur' as string]: `${TOTAL_LESSONS * 6}s` } as React.CSSProperties}>
         {row(0)}
         {row(1)}
       </div>
@@ -285,17 +175,12 @@ const TickerStrip: React.FC<{ assets: Asset[]; fallback: { icon: string; label: 
   )
 }
 
-interface NavbarProps {
-  assets?: Asset[]
-}
-
-export const Navbar: React.FC<NavbarProps> = ({ assets = [] }) => {
+export const Navbar: React.FC = () => {
   const { user, isGuest, logout } = usePlatform()
   const [customization] = useProfileCustomization(user.username)
   const navStyle: NavStyle = isGuest ? 'bill' : customization.navStyle
   const location = useLocation()
   const navigate = useNavigate()
-  const reduced = usePrefersReducedMotion()
 
   const [isMoreOpen, setIsMoreOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -331,7 +216,8 @@ export const Navbar: React.FC<NavbarProps> = ({ assets = [] }) => {
   const tabIndex = isSheetOpen || (activeTabIndex < 0 && isMoreActive) ? MAIN_ITEMS.length : activeTabIndex
   const isIsland = navStyle === 'island'
 
-  const xpProgress = user.xpToNext > 0 ? Math.min(1, Math.max(0, user.xp / user.xpToNext)) : 0
+  const course = getCourseProgress(user.moduleProgress)
+  const courseRatio = course.percent / 100
   const initials = (user.name || user.username || 'U').slice(0, 2).toUpperCase()
   const avatarSrc = isGuest ? '' : resolveAvatarSrc(user.avatar, user.username)
 
@@ -449,14 +335,6 @@ export const Navbar: React.FC<NavbarProps> = ({ assets = [] }) => {
     navigate('/')
   }
 
-  const renderStats = () => (
-    <>
-      <StatChip icon="fa-solid fa-fire" iconClassName="nav-flame" value={user.streak} suffix="d" color="var(--ink-3)" label="Racha de días" reduced={reduced} compact={fitLevel >= 1} />
-      <StatChip icon="fa-solid fa-star" value={user.level} prefix={fitLevel >= 1 ? '' : 'Nv. '} color="var(--ink-2)" label="Nivel" reduced={reduced} progress={xpProgress} compact={fitLevel >= 1} />
-      <StatChip icon="fa-solid fa-coins" value={user.coins} color="var(--coin)" label="Monedas Kor" reduced={reduced} compact={fitLevel >= 1} />
-    </>
-  )
-
   const renderProfilePanel = (placement: 'below' | 'side') => (
     <div
       data-open={isProfileOpen}
@@ -465,16 +343,16 @@ export const Navbar: React.FC<NavbarProps> = ({ assets = [] }) => {
       }`}
     >
       <div className="note-paper flex items-center gap-3 border-x-0 border-t-0 p-4">
-        <Avatar src={avatarSrc} initials={initials} progress={xpProgress} size={48} />
+        <Avatar src={avatarSrc} initials={initials} progress={courseRatio} size={48} />
         <div className="min-w-0 flex-1">
           <div className="nav-font truncate text-[15px] font-bold text-[var(--text)]">{user.name}</div>
           <div className="truncate text-[13px] text-[var(--text-muted)]">@{user.username}</div>
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex items-center gap-2" title="Avance del curso">
             <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--ink)_14%,transparent)]">
-              <span className="nav-xp block h-full rounded-full bg-[var(--ink)]" style={{ width: `${Math.round(xpProgress * 100)}%` }}></span>
+              <span className="nav-xp block h-full rounded-full bg-[var(--ink)]" style={{ width: `${course.percent}%` }}></span>
             </span>
             <span className="note-num shrink-0 text-[11.5px] font-semibold text-[var(--text-muted)]">
-              {user.xp}/{user.xpToNext} XP
+              {course.done}/{TOTAL_LESSONS} lecciones
             </span>
           </div>
         </div>
@@ -527,7 +405,7 @@ export const Navbar: React.FC<NavbarProps> = ({ assets = [] }) => {
           aria-label="Abrir menú de perfil"
           className="flex cursor-pointer items-center gap-2 rounded-full p-0.5 transition-colors hover:bg-[var(--paper)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink)] xl:pr-3"
         >
-          <Avatar src={avatarSrc} initials={initials} progress={xpProgress} />
+          <Avatar src={avatarSrc} initials={initials} progress={courseRatio} />
           <span className={`nav-font hidden text-[14px] font-semibold text-[var(--text)] ${fitLevel >= 1 ? '' : 'xl:inline'}`}>{user.username}</span>
           <i className={`nav-chevron fa-solid fa-chevron-down hidden text-[9px] text-[var(--text-muted)] xl:inline ${isProfileOpen ? 'rotate-180' : ''}`}></i>
         </button>
@@ -564,6 +442,7 @@ export const Navbar: React.FC<NavbarProps> = ({ assets = [] }) => {
             <i className={`${item.icon} text-[12px] opacity-80`}></i>
             <span className={fitLevel >= 2 ? 'sr-only' : fitLevel === 1 ? '' : 'xl:hidden'}>{item.shortLabel}</span>
             <span className={fitLevel >= 1 ? 'hidden' : 'hidden xl:inline'}>{item.label}</span>
+            {item.locked && <i className="fa-solid fa-lock text-[9px] opacity-60" aria-label="Bloqueado"></i>}
           </NavLink>
         ))}
 
@@ -643,23 +522,12 @@ export const Navbar: React.FC<NavbarProps> = ({ assets = [] }) => {
             {navStyle !== 'sidebar' && renderDesktopLinks()}
           </div>
           <div ref={rightRef} className="flex shrink-0 items-center gap-2 sm:gap-3">
-            {!isGuest && <div className="flex shrink-0 items-center gap-1.5">{renderStats()}</div>}
             {renderAccount()}
           </div>
         </div>
       </div>
       {navStyle === 'ticker' && (
-        <TickerStrip
-          assets={assets}
-          fallback={[
-            { icon: 'fa-solid fa-star', label: 'Nivel', value: `${user.level} · ${user.xp}/${user.xpToNext} XP`, to: '/perfil' },
-            { icon: 'fa-solid fa-fire', label: 'Racha', value: `${user.streak} ${user.streak === 1 ? 'día' : 'días'}`, to: '/perfil' },
-            { icon: 'fa-solid fa-coins', label: 'Kor', value: String(user.coins), to: '/perfil?estudio=tema' },
-            { icon: 'fa-solid fa-road', label: 'Lecciones', value: `${(user.moduleProgress?.trading || []).length}/8`, to: '/aprender' },
-            { icon: 'fa-solid fa-trophy', label: 'Logros', value: String(user.achievements.length), to: '/perfil' },
-            { icon: 'fa-solid fa-chart-simple', label: 'Exchange', value: 'Enciende el servidor para ver precios en vivo', to: '/exchange' },
-          ]}
-        />
+        <TickerStrip completed={course.completed} resumeIndex={course.resumeIndex} />
       )}
     </header>
   )
@@ -682,7 +550,6 @@ export const Navbar: React.FC<NavbarProps> = ({ assets = [] }) => {
           {renderDesktopLinks()}
         </div>
         <div ref={rightRef} className="flex shrink-0 items-center gap-2">
-          {!isGuest && <div className="flex shrink-0 items-center gap-1.5">{renderStats()}</div>}
           {renderAccount()}
         </div>
       </div>
@@ -709,7 +576,10 @@ export const Navbar: React.FC<NavbarProps> = ({ assets = [] }) => {
         {MAIN_ITEMS.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.to === '/'} className={({ isActive }) => railLinkClass(isActive)} title={item.label}>
             <i className={`${item.icon} w-5 shrink-0 text-center text-[16px]`}></i>
-            <span className="nav-rail-label nav-font whitespace-nowrap">{item.label}</span>
+            <span className="nav-rail-label nav-font flex items-center gap-2 whitespace-nowrap">
+              {item.label}
+              {item.locked && <i className="fa-solid fa-lock text-[10px] opacity-60"></i>}
+            </span>
           </NavLink>
         ))}
         <div className="nav-rail-label note-wide mx-[14px] mb-1 mt-4 whitespace-nowrap text-[9px] font-bold text-[var(--ink)] opacity-80">MÁS SECCIONES</div>
@@ -722,7 +592,6 @@ export const Navbar: React.FC<NavbarProps> = ({ assets = [] }) => {
         ))}
       </nav>
       <div className="border-t border-[var(--rule)] p-2.5">
-        <div className="nav-rail-stats mb-2 flex flex-wrap gap-1.5 px-1">{renderStats()}</div>
         <div ref={railProfileRef} className="relative">
           <button
             type="button"
@@ -732,10 +601,12 @@ export const Navbar: React.FC<NavbarProps> = ({ assets = [] }) => {
             aria-label="Abrir menú de perfil"
             className="flex w-full cursor-pointer items-center gap-3 rounded-xl p-[7px] text-left transition-colors hover:bg-[var(--paper)]"
           >
-            <Avatar src={avatarSrc} initials={initials} progress={xpProgress} size={38} />
+            <Avatar src={avatarSrc} initials={initials} progress={courseRatio} size={38} />
             <span className="nav-rail-label min-w-0 flex-1">
               <span className="nav-font block truncate text-[14px] font-bold text-[var(--text)]">{user.username}</span>
-              <span className="block text-[12px] text-[var(--text-muted)]">Nivel {user.level}</span>
+              <span className="block text-[12px] text-[var(--text-muted)]">
+                {course.done}/{TOTAL_LESSONS} lecciones
+              </span>
             </span>
           </button>
           {renderProfilePanel('side')}
@@ -802,7 +673,14 @@ export const Navbar: React.FC<NavbarProps> = ({ assets = [] }) => {
               const isActive = index === tabIndex
               return (
                 <NavLink key={item.to} to={item.to} end={item.to === '/'} className="nav-tab relative flex flex-col items-center justify-center gap-1">
-                  <i className={`nav-tab-icon ${item.icon} flex h-8 items-center text-[17px] ${isActive ? 'text-[var(--ink)]' : 'text-[var(--text-muted)]'}`}></i>
+                  <span className="relative">
+                    <i className={`nav-tab-icon ${item.icon} flex h-8 items-center text-[17px] ${isActive ? 'text-[var(--ink)]' : 'text-[var(--text-muted)]'}`}></i>
+                    {item.locked && (
+                      <span className="absolute -right-2.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--bg-alt)] text-[8px] text-[var(--text-muted)]">
+                        <i className="fa-solid fa-lock"></i>
+                      </span>
+                    )}
+                  </span>
                   <span className={`nav-font text-[10.5px] font-bold leading-none ${isActive ? 'text-[var(--ink)]' : 'text-[var(--text-muted)]'}`}>{item.shortLabel}</span>
                 </NavLink>
               )
