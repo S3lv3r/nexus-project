@@ -18,10 +18,6 @@ import { ProgressPage } from './pages/ProgressPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { ResultPage } from './pages/ResultPage'
 import { SettingsPage } from './pages/SettingsPage'
-import { StockAnalysisPage } from './pages/StockAnalysisPage'
-import { CryptoAnalysisPage } from './pages/CryptoAnalysisPage'
-import { PersonalFinancePage } from './pages/PersonalFinancePage'
-import { TradingTerminalPage } from './pages/TradingTerminalPage'
 import { TermsPage } from './pages/TermsPage'
 import { loadMemberPage } from './components/about/preload'
 import { TOTAL_LESSONS, TOTAL_TOPICS } from './data/course'
@@ -58,8 +54,8 @@ const MainAppContent: React.FC = () => {
             element={
               <LockedSection
                 heading="Análisis Técnico"
-                title="Este módulo se abrirá muy pronto"
-                message="Estamos terminando el Análisis Técnico para que llegue completo. Mientras tanto, avanza en tus lecciones: todo lo que aprendas ahí te servirá aquí."
+                title="Sigue aprendiendo para desbloquear el Análisis Técnico"
+                message="Avanza en tus lecciones para desbloquear el Análisis Técnico, te mostrará información de apoyo para tus lecciones y uso cotidiano!"
               >
                 <AnalysisPreview />
               </LockedSection>
@@ -74,56 +70,6 @@ const MainAppContent: React.FC = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route path="/analisis" element={<AnalysisPage />} />
-          <Route path="/analisis/acciones" element={<StockAnalysisPage />} />
-          <Route path="/analisis/criptos" element={<CryptoAnalysisPage />} />
-          <Route path="/analisis/finanzas-personales" element={<PersonalFinancePage />} />
-
-          <Route path="/simulador" element={<Navigate to="/exchange" replace />} />
-
-          <Route
-            path="/exchange"
-            element={
-              <MarketPage
-                assets={assets}
-                overview={overview}
-                events={events}
-                top10Data={top10Data}
-                isLoading={isLoading}
-                searchTerm={searchTerm}
-                onOpenSync={() => setIsSyncModalOpen(true)}
-                onOpenSimulator={() => setIsSimulatorModalOpen(true)}
-              />
-            }
-          />
-          <Route
-            path="/trade/:id"
-            element={
-              <TradingTerminalPage
-                portfolio={portfolio}
-                onTrade={handleTrade}
-              />
-            }
-          />
-          <Route
-            path="/portfolio"
-            element={
-              <PortfolioPage
-                portfolio={portfolio}
-                isLoading={isLoading}
-                onRetry={() => loadData(true)}
-              />
-            }
-          />
-          <Route
-            path="/history"
-            element={
-              <HistoryPage
-                transactions={transactions}
-                isLoading={isLoading}
-              />
-            }
-          />
           <Route path="/terminos" element={<TermsPage />} />
           {REMOVED_PATHS.map((path) => (
             <Route key={path} path={path} element={<Navigate to={path.startsWith('/analisis') ? '/analisis' : '/'} replace />} />
